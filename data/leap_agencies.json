@@ -1,0 +1,110 @@
+[
+  {
+    "id": "united-way-simcoe-muskoka",
+    "name": "United Way Simcoe Muskoka",
+    "phone": "1-855-487-5327",
+    "hours": "Mon–Fri 8:30AM–4:00PM",
+    "onlinePortal": "https://uwsimcoemuskoka.ca/leap",
+    "servicesLDCs": [
+      "EPCOR Natural Gas Ltd. Partnership",
+      "Alectra Utilities Corporation-PowerStream Rate Zone",
+      "InnPower Corporation",
+      "Wasaga Distribution Inc.",
+      "Newmarket-Tay Power Distribution Ltd.-Midland Rate Zone",
+      "Newmarket-Tay Power Distribution Ltd.-Newmarket-Tay Rate Zone"
+    ],
+    "regions": ["Barrie", "Brampton", "Markham", "Richmond Hill", "Vaughan", "Aurora", "Newmarket", "Midland", "Penetanguishene", "Wasaga Beach", "Alliston", "Bradford", "Thornton", "Tottenham", "Beeton"]
+  },
+  {
+    "id": "salvation-army-burlington",
+    "name": "The Salvation Army – Burlington Community & Family Services",
+    "phone": "905-637-3644",
+    "hours": "Mon–Fri 9:00AM–4:00PM",
+    "onlinePortal": null,
+    "servicesLDCs": ["Burlington Hydro Inc."],
+    "regions": ["Burlington"]
+  },
+  {
+    "id": "toronto-hydro-agency",
+    "name": "Toronto Hydro LEAP Intake (multiple agencies)",
+    "phone": "211",
+    "hours": "Call 211 to find nearest Toronto agency",
+    "onlinePortal": "https://www.toronto.ca/community-people/employment-social-support/",
+    "servicesLDCs": ["Toronto Hydro-Electric System Limited"],
+    "regions": ["Toronto"]
+  },
+  {
+    "id": "hydro-ottawa-agency",
+    "name": "United Way East Ontario (Ottawa LEAP)",
+    "phone": "613-228-6700",
+    "hours": "Mon–Fri 8:30AM–4:30PM",
+    "onlinePortal": "https://uwsimcoemuskoka.ca/leap",
+    "servicesLDCs": ["Hydro Ottawa Limited", "Ottawa River Power Corporation"],
+    "regions": ["Ottawa", "Rockland", "Hawkesbury", "Arnprior"]
+  },
+  {
+    "id": "community-services-waterloo",
+    "name": "Region of Waterloo Community Services",
+    "phone": "519-883-2100",
+    "hours": "Mon–Fri 8:30AM–4:30PM",
+    "onlinePortal": null,
+    "servicesLDCs": [
+      "Enova Power Corp.-Waterloo North Rate Zone",
+      "Enova Power Corp.-Kitchener-Wilmot Hydro Rate Zone"
+    ],
+    "regions": ["Waterloo", "Kitchener", "Cambridge", "Woolwich", "Wilmot", "Wellesley", "North Dumfries"]
+  },
+  {
+    "id": "london-middlesex-agency",
+    "name": "London CAReS / Middlesex-London Health Unit",
+    "phone": "519-663-5317",
+    "hours": "Mon–Fri 8:30AM–4:30PM",
+    "onlinePortal": null,
+    "servicesLDCs": ["London Hydro Inc.", "Entegrus Powerlines Inc.-For Former St. Thomas Energy Rate Zone"],
+    "regions": ["London", "St. Thomas", "Strathroy"]
+  },
+  {
+    "id": "hydro-one-agency-general",
+    "name": "Contact your local Ontario Works or Social Services office",
+    "phone": "1-888-999-1142",
+    "hours": "Mon–Fri 8:30AM–5:00PM",
+    "onlinePortal": "https://www.ontario.ca/locations/ontario-works",
+    "servicesLDCs": [
+      "Hydro One Networks Inc.",
+      "Hydro One Networks Inc.-Former Orillia Power Distribution Corporation Service Area",
+      "Hydro One Networks Inc.-Former Peterborough Distribution Inc. Service Area",
+      "Algoma Power Inc.",
+      "Northern Ontario Wires Inc.",
+      "Sioux Lookout Hydro Inc.",
+      "Lakeland Power Distribution Ltd."
+    ],
+    "regions": ["Rural Ontario", "Northern Ontario", "Orillia", "Peterborough", "Sault Ste. Marie", "Sioux Lookout"]
+  },
+  {
+    "id": "greater-sudbury-agency",
+    "name": "Sudbury & District Health Unit / Social Services",
+    "phone": "705-522-9200",
+    "hours": "Mon–Fri 8:30AM–4:30PM",
+    "onlinePortal": null,
+    "servicesLDCs": ["Greater Sudbury Hydro Inc.", "PUC Distribution Inc."],
+    "regions": ["Greater Sudbury", "Sault Ste. Marie"]
+  },
+  {
+    "id": "windsor-essex-agency",
+    "name": "Windsor-Essex Community Health Centre",
+    "phone": "519-258-8880",
+    "hours": "Mon–Fri 9:00AM–5:00PM",
+    "onlinePortal": null,
+    "servicesLDCs": ["ENWIN Utilities Ltd.", "ESSEX POWERLINES CORPORATION"],
+    "regions": ["Windsor", "Essex", "LaSalle", "Tecumseh", "Lakeshore", "Amherstburg", "Kingsville", "Leamington"]
+  },
+  {
+    "id": "kingston-agency",
+    "name": "Frontier Community Services / Kingston Interval House",
+    "phone": "613-544-1394",
+    "hours": "Mon–Fri 8:30AM–4:30PM",
+    "onlinePortal": null,
+    "servicesLDCs": ["Kingston Hydro Corporation", "Rideau St. Lawrence Distribution Inc."],
+    "regions": ["Kingston", "Brockville", "Gananoque", "Prescott"]
+  }
+]

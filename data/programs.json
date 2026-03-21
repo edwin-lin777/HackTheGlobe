@@ -1,0 +1,139 @@
+[
+  {
+    "id": "oesp",
+    "name": "Ontario Electricity Support Program",
+    "shortName": "OESP",
+    "description": "Monthly on-bill credit applied directly to your electricity bill.",
+    "type": "ongoing",
+    "applyUrl": "https://ontarioelectricitysupport.ca",
+    "eligibility": {
+      "requiresArrears": false,
+      "requiresOWSP": false,
+      "incomeThresholds": [
+        { "householdSize": 1, "maxIncome": 28000 },
+        { "householdSize": 2, "maxIncome": 39000 },
+        { "householdSize": 3, "maxIncome": 48000 },
+        { "householdSize": 4, "maxIncome": 56000 },
+        { "householdSize": 5, "maxIncome": 64000 },
+        { "householdSize": 6, "maxIncome": 72000 }
+      ]
+    },
+    "benefits": [
+      { "householdSize": 1, "maxIncome": 28000, "monthlyCredit": 35 },
+      { "householdSize": 2, "maxIncome": 39000, "monthlyCredit": 45 },
+      { "householdSize": 3, "maxIncome": 48000, "monthlyCredit": 55 },
+      { "householdSize": 4, "maxIncome": 56000, "monthlyCredit": 65 },
+      { "householdSize": 5, "maxIncome": 64000, "monthlyCredit": 75 },
+      { "householdSize": 6, "maxIncome": 72000, "monthlyCredit": 75 }
+    ],
+    "higherCreditEligible": {
+      "description": "Higher credits ($52–$113/month) available for electrically-heated homes, medical device users, or Indigenous households.",
+      "maxMonthlyCredit": 113
+    }
+  },
+  {
+    "id": "leap",
+    "name": "Low-income Energy Assistance Program",
+    "shortName": "LEAP",
+    "description": "One-time emergency grant if you are behind on your electricity or natural gas bill.",
+    "type": "emergency",
+    "applyUrl": "https://www.oeb.ca/consumer-information-and-protection/bill-assistance-programs/low-income-energy-assistance-program",
+    "eligibility": {
+      "requiresArrears": true,
+      "cannotBeOESPRecipient": true,
+      "incomeThresholds": [
+        { "householdSize": 1, "maxIncome": 28000 },
+        { "householdSize": 2, "maxIncome": 39000 },
+        { "householdSize": 3, "maxIncome": 48000 },
+        { "householdSize": 4, "maxIncome": 65000 },
+        { "householdSize": 5, "maxIncome": 74000 },
+        { "householdSize": 6, "maxIncome": 82000 }
+      ]
+    },
+    "benefits": {
+      "electricityMaxGrant": 650,
+      "electricityHeatedMaxGrant": 780,
+      "naturalGasMaxGrant": 650,
+      "note": "Grant cannot exceed amount owed on bill."
+    },
+    "applicationProcess": "in-person or phone via intake agency"
+  },
+  {
+    "id": "eap",
+    "name": "Energy Affordability Program",
+    "shortName": "EAP",
+    "description": "Free energy-efficient upgrades including smart thermostat, LED bulbs, fridge replacement, and more.",
+    "type": "retrofit",
+    "applyUrl": "https://saveonenergy.ca/For-Your-Home/Energy-Affordability-Program",
+    "eligibility": {
+      "requiresOESP": true,
+      "note": "Automatically eligible if you receive OESP or LEAP."
+    },
+    "benefits": {
+      "items": [
+        "Smart thermostat",
+        "LED light bulbs",
+        "Smart power bars",
+        "Refrigerator replacement (older models)",
+        "Window air conditioner replacement",
+        "Draft proofing and insulation (electrically heated homes)"
+      ]
+    }
+  },
+  {
+    "id": "enbridge_winterproofing",
+    "name": "Enbridge Home Winterproofing Program",
+    "shortName": "Enbridge Winterproofing",
+    "description": "Free home energy assessment and weatherization upgrades for Enbridge Gas customers.",
+    "type": "retrofit",
+    "applyUrl": "https://www.enbridgegas.com/home-winterproofing",
+    "eligibility": {
+      "requiresEnbridgeService": true,
+      "incomeQualified": true,
+      "note": "Must be an Enbridge Gas customer and meet income criteria."
+    },
+    "benefits": {
+      "items": [
+        "Free home energy assessment",
+        "Weatherization upgrades at no cost",
+        "Smart thermostat",
+        "Showerheads and aerators",
+        "Carbon monoxide detector"
+      ]
+    }
+  },
+  {
+    "id": "noec",
+    "name": "Northern Ontario Energy Credit",
+    "shortName": "NOEC",
+    "description": "Annual tax credit for low-to-moderate income residents of Northern Ontario to offset higher energy costs.",
+    "type": "tax_credit",
+    "applyUrl": "https://www.ontario.ca/page/ontario-trillium-benefit",
+    "eligibility": {
+      "requiresNorthernOntario": true,
+      "northernDistricts": [
+        "Algoma", "Cochrane", "Kenora", "Manitoulin", "Nipissing",
+        "Parry Sound", "Rainy River", "Sudbury", "Thunder Bay", "Timiskaming"
+      ],
+      "note": "Apply via ON-BEN form on your annual tax return."
+    },
+    "benefits": {
+      "note": "Amount adjusted annually for inflation. Applied as part of Ontario Trillium Benefit."
+    }
+  },
+  {
+    "id": "home_renovation_savings",
+    "name": "Home Renovation Savings Program",
+    "shortName": "Home Reno Savings",
+    "description": "Rebates for home energy efficiency improvements including insulation, heat pumps, and smart thermostats.",
+    "type": "rebate",
+    "applyUrl": "https://www.ontario.ca/page/home-renovation-savings-program",
+    "eligibility": {
+      "requiresResidential": true,
+      "note": "Available to all residential electricity and natural gas customers in Ontario."
+    },
+    "benefits": {
+      "note": "Rebate amounts vary by upgrade type. Expanding in 2025 to include appliances."
+    }
+  }
+]
