@@ -126,6 +126,11 @@ export default function EligibilityPage() {
       const hasAnyProgram =
         data && Array.isArray(data.programs) && data.programs.length > 0;
 
+      // Save full eligibility result for the dashboard page
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("eligibilityResult", JSON.stringify(data));
+      }
+
       const params = new URLSearchParams({
         postalCode,
         hasPrograms: String(hasAnyProgram),
@@ -137,6 +142,7 @@ export default function EligibilityPage() {
       console.error("Error calling /api/eligibility:", err);
     }
   }
+
 
 
 

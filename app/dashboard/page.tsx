@@ -1,411 +1,190 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-const DATA = {
-  programs: [
-    {
-      id: "oesp",
-      name: "Ontario Electricity Support Program",
-      shortName: "OESP",
-      type: "ongoing",
-      description:
-        "A monthly credit applied directly to your electricity bill automatically.",
-      applyUrl: "https://ontarioelectricitysupport.ca",
-      annualSaving: 540,
-      monthlyCredit: 45,
-      status: "not_started",
-      howToApply:
-        "Apply online at OESP.ca. You will need your electricity account number and SIN of all household members 18+.",
-      documents: [
-        "Electricity bill (for account number)",
-        "SIN for all household members 18+",
-        "Names and birthdates of everyone in the home",
-      ],
-    },
-    {
-      id: "leap",
-      name: "Low-income Energy Assistance Program",
-      shortName: "LEAP",
-      type: "emergency",
-      description:
-        "A one-time emergency grant of up to $650 if you are behind on your electricity or gas bill.",
-      applyUrl: null,
-      annualSaving: 650,
-      monthlyCredit: null,
-      status: "not_started",
-      howToApply:
-        "Cannot apply online. Must call or visit your local LEAP intake agency. See agency card below.",
-      documents: [
-        "Most recent bill showing amount owing",
-        "Proof of income (pay stub, tax return, or OW/ODSP statement)",
-        "Government-issued ID",
-        "Proof of address",
-      ],
-    },
-    {
-      id: "eap",
-      name: "Energy Affordability Program",
-      shortName: "EAP",
-      type: "retrofit",
-      description:
-        "Free home upgrades — smart thermostat, LED bulbs, fridge replacement.",
-      applyUrl: "https://saveonenergy.ca",
-      annualSaving: null,
-      monthlyCredit: null,
-      status: "not_started",
-      howToApply:
-        "Apply at SaveOnEnergy.ca. You automatically qualify because you are eligible for OESP.",
-      documents: ["Proof of OESP enrollment"],
-    },
-    {
-      id: "enbridge_winterproofing",
-      name: "Enbridge Home Winterproofing",
-      shortName: "Winterproofing",
-      type: "retrofit",
-      description:
-        "Free home weatherization — draft proofing, insulation, smart thermostat.",
-      applyUrl: "https://www.enbridgegas.com/home-winterproofing",
-      annualSaving: null,
-      monthlyCredit: null,
-      status: "not_started",
-      howToApply: "Apply at enbridgegas.com/home-winterproofing.",
-      documents: ["Enbridge Gas account number", "Proof of income"],
-    },
-  ],
-  billImpact: {
-    ldcName: "Toronto Hydro-Electric System Limited",
-    monthlyBill: 117.29,
-    annualBill: 1407.54,
-    totalAnnualSaving: 1190,
-    savingPercentage: 85,
-  },
-  agency: {
-    name: "Toronto Hydro LEAP Intake",
-    phone: "211",
-    hours: "Mon–Fri 9:00AM–5:00PM",
-    onlinePortal:
-      "https://www.toronto.ca/community-people/employment-social-support/",
-    note: "Call 211 and ask for your nearest LEAP intake agency.",
-  },
-  alerts: [
-    {
-      id: "a1",
-      title: "OESP income thresholds increased",
-      message:
-        "Ontario raised OESP eligibility thresholds by 35% in 2024. You may qualify for a higher monthly credit.",
-    },
-    {
-      id: "a2",
-      title: "LEAP application not started",
-      message:
-        "You qualify for up to $650 in emergency bill assistance and haven't started this yet.",
-    },
-  ],
+const ALL_PROGRAM_IDS = [
+  "oesp",
+  "leap",
+  "eap",
+  "enbridge_winterproofing",
+  "noec",
+  "home_renovation_savings",
+];
+
+const PROGRAM_LABELS: Record<string, string> = {
+  oesp: "Ontario Electricity Support Program",
+  leap: "Low-income Energy Assistance Program",
+  eap: "Energy Affordability Program",
+  enbridge_winterproofing: "Enbridge Home Winterproofing Program",
+  noec: "Northern Ontario Energy Credit",
+  home_renovation_savings: "Home Renovation Savings Program",
 };
 
-export default function Dashboard() {
-  const [statuses, setStatuses] = useState<Record<string, string>>(
-    Object.fromEntries(DATA.programs.map((p) => [p.id, p.status])),
-  );
-  const [dismissed, setDismissed] = useState<string[]>([]);
+type AnswersFlags = {
+  hasArrears: boolean;
+  isHeatedElectric: boolean;
+  isEnbridgeCustomer: boolean;
+  isNorthernOntario: boolean;
+  isOWSP: boolean;
+};
 
-  const hasLEAP = DATA.programs.some((p) => p.id === "leap");
+function reasonForIneligibility(id: string, a: AnswersFlags): string {
+  switch (id) {
+    case "oesp":
+      if (!a.isOWSP) {
+        return "Your income is above the limit for your household size, or you are not on Ontario Works or ODSP.";
+      }
+      return "You do not meet the income or benefit rules for OESP.";
+    case "leap":
+      if (!a.hasArrears) {
+        return "LEAP is for people who are behind on their electricity or gas bill.";
+      }
+      return "You may not meet LEAP’s income rules, or you already qualify for OESP.";
+    case "eap":
+      return "You are not eligible for OESP, so you do not automatically qualify for the Energy Affordability Program.";
+    case "enbridge_winterproofing":
+      if (!a.isEnbridgeCustomer) {
+        return "This program is only for Enbridge Gas customers.";
+      }
+      return "Your income is above the limit for the Enbridge Home Winterproofing Program.";
+    case "noec":
+      return "The Northern Ontario Energy Credit is only for people living in Northern Ontario.";
+    case "home_renovation_savings":
+      return "This program is generally available, but we could not match it based on your answers.";
+    default:
+      return "Based on your answers, this program is not a match right now.";
+  }
+}
+
+export default function DashboardPage() {
+  const [eligible, setEligible] = useState<any[]>([]);
+  const [ineligibleIds, setIneligibleIds] = useState<string[]>([]);
+  const [flags, setFlags] = useState<AnswersFlags | null>(null);
+
+  useEffect(() => {
+    const raw = sessionStorage.getItem("eligibilityResult");
+    if (!raw) return;
+    const data = JSON.parse(raw);
+
+    const programs = Array.isArray(data.programs) ? data.programs : [];
+    setEligible(programs);
+
+    const matchedIds = new Set(programs.map((p: any) => p.id));
+    const notMatched = ALL_PROGRAM_IDS.filter((id) => !matchedIds.has(id));
+    setIneligibleIds(notMatched);
+
+    // pull flags from the original profile if your backend echoed it back;
+    // fall back to false if not present
+    setFlags({
+      hasArrears: Boolean(data.profile?.hasArrears),
+      isHeatedElectric: Boolean(data.profile?.isElectricHeat),
+      isEnbridgeCustomer: Boolean(data.profile?.isEnbridgeCustomer),
+      isNorthernOntario: Boolean(data.profile?.isNorthernOntario),
+      isOWSP: Boolean(data.profile?.isOWSP),
+    });
+  }, []);
+
+  if (!eligible.length && !ineligibleIds.length) {
+    return (
+      <main className="mx-auto max-w-4xl px-4 py-8">
+        <h1 className="mb-4 text-2xl font-bold text-slate-50">
+          Your energy supports
+        </h1>
+        <p className="text-slate-200">
+          We could not find your answers. Please start the eligibility check
+          again.
+        </p>
+      </main>
+    );
+  }
 
   return (
-    <div
-      style={{
-        maxWidth: 640,
-        margin: "0 auto",
-        padding: "24px 16px",
-        fontFamily: "sans-serif",
-      }}
-    >
-      {/* Title */}
-      <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 4 }}>
-        Your Energy Benefits
+    <main className="mx-auto max-w-5xl px-4 py-8">
+      <h1 className="mb-6 text-3xl font-bold text-slate-50">
+        Your energy supports
       </h1>
-      <p style={{ color: "#555", marginBottom: 24 }}>
-        You qualify for <strong>{DATA.programs.length} programs</strong> —
-        potential savings of{" "}
-        <strong style={{ color: "green" }}>
-          ${DATA.billImpact.totalAnnualSaving}/year
-        </strong>
-      </p>
 
-      {/* Alerts */}
-      {DATA.alerts
-        .filter((a) => !dismissed.includes(a.id))
-        .map((alert) => (
-          <div
-            key={alert.id}
-            style={{
-              background: "#eff6ff",
-              border: "1px solid #bfdbfe",
-              borderRadius: 8,
-              padding: "12px 14px",
-              marginBottom: 10,
-              display: "flex",
-              justifyContent: "space-between",
-              gap: 12,
-            }}
-          >
-            <div>
-              <p style={{ margin: "0 0 2px 0", fontWeight: 700, fontSize: 14 }}>
-                🔔 {alert.title}
+      {/* Eligible programs in a grid */}
+      <section className="mb-10">
+        <h2 className="mb-4 text-2xl font-bold text-slate-50">
+          You may be eligible for:
+        </h2>
+
+        {eligible.length === 0 ? (
+          <p className="text-lg text-slate-200">
+            Based on your answers, we did not find any programs that are a strong
+            match right now.
+          </p>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {eligible.map((program) => (
+              <article
+                key={program.id}
+                className="flex flex-col justify-between rounded-xl border border-slate-800 bg-slate-900 p-5"
+              >
+                <div>
+                  <h3 className="text-xl font-semibold text-slate-50">
+                    {program.name}
+                  </h3>
+                  {program.monthlyCredit && (
+                    <p className="mt-2 text-sm text-yellow-300">
+                      Estimated monthly credit: ${program.monthlyCredit}
+                    </p>
+                  )}
+                  {program.annualSaving && (
+                    <p className="mt-1 text-sm text-yellow-300">
+                      Estimated yearly support: ${program.annualSaving}
+                    </p>
+                  )}
+                  <p className="mt-3 text-sm text-slate-200">
+                    {program.description}
+                  </p>
+                  <p className="mt-3 text-sm text-slate-300">
+                    {program.howToApply}
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  className="mt-4 inline-flex items-center justify-center rounded-md bg-yellow-400 px-4 py-2 text-base font-semibold text-black hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 focus:ring-offset-slate-900"
+                >
+                  Apply
+                </button>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Not-eligible programs with reasons */}
+      <section>
+        <h2 className="mb-3 text-2xl font-bold text-slate-50">
+          Programs that are not a match right now
+        </h2>
+        <p className="mb-4 text-base text-slate-200">
+          These programs exist in Ontario, but based on your answers you may
+          not qualify at the moment. If your situation changes, you can check
+          again.
+        </p>
+
+        <div className="space-y-3">
+          {ineligibleIds.map((id) => (
+            <div
+              key={id}
+              className="rounded-lg border border-slate-800 bg-slate-950 p-4"
+            >
+              <p className="text-lg font-semibold text-slate-50">
+                {PROGRAM_LABELS[id] ?? id}
               </p>
-              <p style={{ margin: 0, fontSize: 13, color: "#444" }}>
-                {alert.message}
+              <p className="mt-2 text-base text-slate-200">
+                {flags
+                  ? reasonForIneligibility(id, flags)
+                  : "Based on your answers, this program is not a match right now."}
               </p>
             </div>
-            <button
-              onClick={() => setDismissed([...dismissed, alert.id])}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                fontSize: 18,
-                color: "#999",
-              }}
-            >
-              ×
-            </button>
-          </div>
-        ))}
-
-      {/* Savings banner */}
-      <div
-        style={{
-          background: "#0f172a",
-          color: "white",
-          borderRadius: 12,
-          padding: 24,
-          marginBottom: 24,
-          marginTop: 8,
-        }}
-      >
-        <p style={{ margin: "0 0 4px 0", fontSize: 13, opacity: 0.6 }}>
-          {DATA.billImpact.ldcName}
-        </p>
-        <p style={{ margin: "0 0 12px 0", fontSize: 14, opacity: 0.7 }}>
-          Current annual bill:{" "}
-          <strong style={{ color: "white" }}>
-            ${DATA.billImpact.annualBill}
-          </strong>
-        </p>
-        <p style={{ margin: "0 0 4px 0", fontSize: 13, opacity: 0.6 }}>
-          You could save up to
-        </p>
-        <p
-          style={{ margin: 0, fontSize: 48, fontWeight: 900, color: "#34d399" }}
-        >
-          ${DATA.billImpact.totalAnnualSaving}/yr
-        </p>
-      </div>
-
-      {/* Program cards */}
-      <p
-        style={{
-          fontSize: 11,
-          fontWeight: 700,
-          color: "#999",
-          textTransform: "uppercase",
-          letterSpacing: "0.1em",
-          marginBottom: 12,
-        }}
-      >
-        Programs You Qualify For
-      </p>
-
-      {DATA.programs.map((p) => (
-        <div
-          key={p.id}
-          style={{
-            border: "1px solid #e5e7eb",
-            borderRadius: 10,
-            padding: "18px 20px",
-            marginBottom: 12,
-            background: "white",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              marginBottom: 8,
-            }}
-          >
-            <span
-              style={{
-                background: "#f3f4f6",
-                padding: "2px 10px",
-                borderRadius: 20,
-                fontSize: 12,
-                fontWeight: 700,
-              }}
-            >
-              {p.shortName}
-            </span>
-            {p.annualSaving && (
-              <span style={{ fontWeight: 900, fontSize: 20, color: "#1d4ed8" }}>
-                ${p.annualSaving}/yr
-              </span>
-            )}
-          </div>
-
-          <h3 style={{ margin: "0 0 4px 0", fontSize: 15, fontWeight: 800 }}>
-            {p.name}
-          </h3>
-          <p style={{ margin: "0 0 10px 0", fontSize: 13, color: "#555" }}>
-            {p.description}
-          </p>
-
-          <p
-            style={{
-              margin: "0 0 4px 0",
-              fontSize: 11,
-              fontWeight: 700,
-              color: "#999",
-              textTransform: "uppercase",
-            }}
-          >
-            How to apply
-          </p>
-          <p style={{ margin: "0 0 12px 0", fontSize: 13, color: "#444" }}>
-            {p.howToApply}
-          </p>
-
-          <p
-            style={{
-              margin: "0 0 4px 0",
-              fontSize: 11,
-              fontWeight: 700,
-              color: "#999",
-              textTransform: "uppercase",
-            }}
-          >
-            What to bring
-          </p>
-          <ul style={{ margin: "0 0 14px 0", paddingLeft: 18 }}>
-            {p.documents.map((doc, i) => (
-              <li
-                key={i}
-                style={{ fontSize: 13, color: "#444", marginBottom: 2 }}
-              >
-                {doc}
-              </li>
-            ))}
-          </ul>
-
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            {p.applyUrl && (
-              <a
-                href={p.applyUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  background: "#1d4ed8",
-                  color: "white",
-                  padding: "8px 16px",
-                  borderRadius: 6,
-                  fontSize: 13,
-                  fontWeight: 700,
-                  textDecoration: "none",
-                }}
-              >
-                Apply Now →
-              </a>
-            )}
-            <select
-              value={statuses[p.id]}
-              onChange={(e) =>
-                setStatuses({ ...statuses, [p.id]: e.target.value })
-              }
-              style={{
-                border: "1px solid #e5e7eb",
-                borderRadius: 6,
-                padding: "8px 10px",
-                fontSize: 13,
-                background: "white",
-              }}
-            >
-              <option value="not_started">Not Started</option>
-              <option value="in_progress">In Progress</option>
-              <option value="submitted">Submitted ✓</option>
-            </select>
-          </div>
+          ))}
         </div>
-      ))}
-
-      {/* LEAP agency — only shows if LEAP is in matched programs */}
-      {hasLEAP && (
-        <div
-          style={{
-            background: "#fffbeb",
-            border: "1px solid #fcd34d",
-            borderRadius: 10,
-            padding: "18px 20px",
-          }}
-        >
-          <p
-            style={{
-              margin: "0 0 4px 0",
-              fontSize: 11,
-              fontWeight: 700,
-              color: "#92400e",
-              textTransform: "uppercase",
-            }}
-          >
-            📍 Your Nearest LEAP Office
-          </p>
-          <h3 style={{ margin: "0 0 8px 0", fontSize: 16, fontWeight: 800 }}>
-            {DATA.agency.name}
-          </h3>
-          <p style={{ margin: "0 0 2px 0", fontSize: 14 }}>
-            📞 <strong>{DATA.agency.phone}</strong>
-          </p>
-          <p style={{ margin: "0 0 8px 0", fontSize: 14 }}>
-            🕐 {DATA.agency.hours}
-          </p>
-          <p style={{ margin: "0 0 14px 0", fontSize: 13, color: "#555" }}>
-            {DATA.agency.note}
-          </p>
-          <div style={{ display: "flex", gap: 8 }}>
-            <a
-              href={`tel:${DATA.agency.phone}`}
-              style={{
-                background: "#d97706",
-                color: "white",
-                padding: "8px 16px",
-                borderRadius: 6,
-                fontSize: 13,
-                fontWeight: 700,
-                textDecoration: "none",
-              }}
-            >
-              📞 Call Now
-            </a>
-            <a
-              href={DATA.agency.onlinePortal}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                background: "white",
-                color: "#d97706",
-                border: "1px solid #d97706",
-                padding: "8px 16px",
-                borderRadius: 6,
-                fontSize: 13,
-                fontWeight: 700,
-                textDecoration: "none",
-              }}
-            >
-              Visit Website
-            </a>
-          </div>
-        </div>
-      )}
-    </div>
+      </section>
+    </main>
   );
 }
