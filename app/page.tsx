@@ -1,30 +1,422 @@
-import Link from "next/link";
+"use client";
+
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { Zap, ArrowRight, ShieldCheck, Home, Wallet } from "lucide-react";
 
 export default function HomePage() {
+  const router = useRouter();
+
+  const handleStart = () => {
+    router.push("/eligibility");
+  };
+
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col justify-center px-4 py-8">
-      <section aria-labelledby="home-heading">
-        <h1 id="home-heading" className="mb-4 text-3xl font-bold text-slate-50">
-          Energy Aid Finder
-        </h1>
-        <p className="mb-6 text-lg text-slate-200">
-          Answer a few simple questions to see which Ontario energy supports you
-          might qualify for.
-        </p>
-
-        <div className="space-y-3">
-          <Link
-            href="/eligibility"
-            className="inline-flex items-center rounded-md bg-yellow-400 px-6 py-3 text-base font-semibold text-black hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:ring-offset-2 focus:ring-offset-slate-900"
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#f8fafc",
+        fontFamily: "'DM Sans', 'Segoe UI', system-ui, sans-serif",
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      {/* NAV (same as application) */}
+      <nav
+        style={{
+          background: "white",
+          borderBottom: "1px solid #f3f4f6",
+          padding: "0 28px",
+          height: "52px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <div
+            style={{
+              width: "26px",
+              height: "26px",
+              borderRadius: "6px",
+              background: "#1d4ed8",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           >
-            Start eligibility check
-          </Link>
-
-          <p className="text-sm text-slate-400">
-            It usually takes less than 3 minutes to complete.
-          </p>
+            <Zap size={13} color="white" fill="white" />
+          </div>
+          <span
+            style={{
+              fontSize: "14px",
+              fontWeight: "800",
+              color: "#111827",
+              letterSpacing: "-0.02em",
+            }}
+          >
+            SubsidyAccess
+          </span>
         </div>
-      </section>
-    </main>
+        <span
+          style={{
+            fontSize: "11px",
+            fontWeight: "600",
+            color: "#9ca3af",
+          }}
+        >
+          Energy supports in Ontario
+        </span>
+      </nav>
+
+      {/* HERO */}
+      <main
+        style={{
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "32px 20px",
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            maxWidth: "840px",
+            display: "grid",
+            gridTemplateColumns: "minmax(0, 1.3fr) minmax(0, 1fr)",
+            gap: "32px",
+          }}
+        >
+          {/* Left column – hero text */}
+          <div>
+            <motion.h1
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              style={{
+                fontSize: "30px",
+                lineHeight: 1.03,
+                fontWeight: 900,
+                color: "#0f172a",
+                letterSpacing: "-0.04em",
+                margin: "0 0 10px 0",
+              }}
+            >
+              Find the energy programs you qualify for in minutes.
+            </motion.h1>
+
+            <motion.p
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1, duration: 0.35 }}
+              style={{
+                fontSize: "14px",
+                color: "#4b5563",
+                lineHeight: 1.7,
+                margin: "0 0 18px 0",
+              }}
+            >
+              Answer a few quick questions and see supports like OESP,
+              LEAP, and free home upgrades – personalized to your
+              household.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.18 }}
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "10px",
+                marginBottom: "18px",
+              }}
+            >
+              <button
+                type="button"
+                onClick={handleStart}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "11px 18px",
+                  borderRadius: "999px",
+                  border: "none",
+                  background:
+                    "linear-gradient(135deg, #2563eb, #1e40af)",
+                  color: "white",
+                  fontSize: "13px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  boxShadow: "0 12px 24px rgba(37,99,235,0.25)",
+                }}
+              >
+                Start eligibility check
+                <ArrowRight size={14} />
+              </button>
+
+              <span
+                style={{
+                  fontSize: "11px",
+                  color: "#6b7280",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                }}
+              >
+                <ShieldCheck size={14} color="#16a34a" />
+                No account, no credit check, no cost.
+              </span>
+            </motion.div>
+
+            {/* Small bullets */}
+            <motion.div
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.25 }}
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "10px",
+                fontSize: "11px",
+                color: "#6b7280",
+              }}
+            >
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "6px 10px",
+                  borderRadius: "999px",
+                  background: "white",
+                  border: "1px solid #e5e7eb",
+                }}
+              >
+                <Home size={12} color="#1d4ed8" />
+                OESP, LEAP, EAP, Enbridge & more
+              </div>
+              <div
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "6px 10px",
+                  borderRadius: "999px",
+                  background: "white",
+                  border: "1px solid #e5e7eb",
+                }}
+              >
+                <Wallet size={12} color="#059669" />
+                See estimated yearly savings
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Right column – card preview */}
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18, duration: 0.4 }}
+            style={{
+              background: "white",
+              borderRadius: "16px",
+              border: "1px solid #e5e7eb",
+              padding: "18px 18px 16px",
+              boxShadow: "0 18px 40px rgba(15,23,42,0.08)",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                marginBottom: "10px",
+              }}
+            >
+              <div>
+                <p
+                  style={{
+                    fontSize: "10px",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    color: "#9ca3af",
+                    margin: "0 0 4px 0",
+                    fontWeight: 700,
+                  }}
+                >
+                  Example result
+                </p>
+                <p
+                  style={{
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    color: "#111827",
+                    margin: 0,
+                    letterSpacing: "-0.02em",
+                  }}
+                >
+                  Family in Toronto, 3 people
+                </p>
+              </div>
+              <div
+                style={{
+                  background: "#eff6ff",
+                  borderRadius: "999px",
+                  padding: "4px 8px",
+                  fontSize: "10px",
+                  color: "#1d4ed8",
+                  fontWeight: 600,
+                }}
+              >
+                4 programs matched
+              </div>
+            </div>
+
+            <div
+              style={{
+                marginTop: "10px",
+                padding: "10px 11px",
+                borderRadius: "12px",
+                background: "#f9fafb",
+                border: "1px dashed #e5e7eb",
+                marginBottom: "12px",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "10px",
+                  color: "#9ca3af",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.08em",
+                  margin: "0 0 4px 0",
+                  fontWeight: 700,
+                }}
+              >
+                Estimated support
+              </p>
+              <p
+                style={{
+                  fontSize: "22px",
+                  fontWeight: 900,
+                  color: "#111827",
+                  margin: 0,
+                  letterSpacing: "-0.04em",
+                }}
+              >
+                $1,190
+                <span
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 400,
+                    color: "#6b7280",
+                    marginLeft: "4px",
+                  }}
+                >
+                  per year
+                </span>
+              </p>
+              <p
+                style={{
+                  fontSize: "10px",
+                  color: "#059669",
+                  margin: "4px 0 0 0",
+                  fontWeight: 600,
+                }}
+              >
+                Covers ~85% of electricity bill
+              </p>
+            </div>
+
+            {/* Mini program chips */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "6px",
+                marginBottom: "8px",
+              }}
+            >
+              {[
+                {
+                  name: "Ontario Electricity Support Program",
+                  short: "OESP",
+                  value: "$45/mo credit",
+                  color: "#2563eb",
+                },
+                {
+                  name: "Low-income Energy Assistance Program",
+                  short: "LEAP",
+                  value: "Up to $650",
+                  color: "#dc2626",
+                },
+                {
+                  name: "Energy Affordability Program",
+                  short: "EAP",
+                  value: "Free upgrades",
+                  color: "#059669",
+                },
+              ].map((p) => (
+                <div
+                  key={p.short}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "7px 9px",
+                    borderRadius: "10px",
+                    background: "#f9fafb",
+                  }}
+                >
+                  <div style={{ display: "flex", flexDirection: "column" }}>
+                    <span
+                      style={{
+                        fontSize: "11px",
+                        fontWeight: 700,
+                        color: "#111827",
+                      }}
+                    >
+                      {p.name}
+                    </span>
+                    <span
+                      style={{
+                        fontSize: "10px",
+                        color: "#6b7280",
+                      }}
+                    >
+                      {p.short}
+                    </span>
+                  </div>
+                  <span
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 700,
+                      color: p.color,
+                    }}
+                  >
+                    {p.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <p
+              style={{
+                fontSize: "10px",
+                color: "#9ca3af",
+                margin: "4px 0 0 0",
+              }}
+            >
+              Results are examples. Your actual programs will depend on your
+              answers.
+            </p>
+          </motion.div>
+        </div>
+      </main>
+    </div>
   );
 }
