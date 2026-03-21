@@ -21,6 +21,9 @@ export default function EligibilityPage() {
   const [onOwOrOdsp, setOnOwOrOdsp] = useState(false);
   const [hasDisability, setHasDisability] = useState(false);
 
+  // NEW: explicit Northern Ontario flag
+  const [livesInNorthernOntario, setLivesInNorthernOntario] = useState(false);
+
   const [situationSubStep, setSituationSubStep] =
     useState<SituationSubStep>(1);
 
@@ -42,7 +45,7 @@ export default function EligibilityPage() {
 
   function goBackOne() {
     if (step === 3 && situationSubStep > 1) {
-      setSituationSubStep((prev) => ((prev - 1) as SituationSubStep));
+      setSituationSubStep((prev) => (prev - 1) as SituationSubStep);
       return;
     }
     if (step === 3 && situationSubStep === 1) {
@@ -95,6 +98,8 @@ export default function EligibilityPage() {
       hasEnbridge,
       onOwOrOdsp,
       hasDisability,
+      // NEW: send explicit Northern Ontario flag to API
+      livesInNorthernOntario,
     };
 
     try {
@@ -126,7 +131,6 @@ export default function EligibilityPage() {
       const hasAnyProgram =
         data && Array.isArray(data.programs) && data.programs.length > 0;
 
-      // Save full eligibility result for the dashboard page
       if (typeof window !== "undefined") {
         sessionStorage.setItem("eligibilityResult", JSON.stringify(data));
       }
@@ -136,16 +140,11 @@ export default function EligibilityPage() {
         hasPrograms: String(hasAnyProgram),
       });
 
-      // Navigate to the dashboard
       router.push(`/dashboard?${params.toString()}`);
     } catch (err) {
       console.error("Error calling /api/eligibility:", err);
     }
   }
-
-
-
-
 
   const onLastSituationSubStep = situationSubStep === 5;
 
@@ -219,40 +218,63 @@ export default function EligibilityPage() {
               <p className="text-base text-slate-200">
                 This helps us find programs that apply to your area.
               </p>
-                  <div>
-                    <label
-                      htmlFor="postalCode"
-                      className="block text-base font-medium text-slate-100"
-                    >
-                      What is your postal code?
-                    </label>
-                    <input
-                      id="postalCode"
-                      type="text"
-                      autoComplete="postal-code"
-                      inputMode="text"
-                      maxLength={7}
-                      value={postalCode}
-                      onChange={(e) => {
-                        // allow letters, digits, and space only
-                        let value = e.target.value.toUpperCase().replace(/[^A-Z0-9 ]/g, "");
+              <div>
+                <label
+                  htmlFor="postalCode"
+                  className="block text-base font-medium text-slate-100"
+                >
+                  What is your postal code?
+                </label>
+                <input
+                  id="postalCode"
+                  type="text"
+                  autoComplete="postal-code"
+                  inputMode="text"
+                  maxLength={7}
+                  value={postalCode}
+                  onChange={(e) => {
+                    // allow letters, digits, and space only
+                    let value = e.target.value
+                      .toUpperCase()
+                      .replace(/[^A-Z0-9 ]/g, "");
 
-                        // auto-insert space after 3rd character if user keeps typing
-                        if (value.length === 3 && !value.includes(" ")) {
-                          value = value + " ";
-                        }
+                    // auto-insert space after 3rd character if user keeps typing
+                    if (value.length === 3 && !value.includes(" ")) {
+                      value = value + " ";
+                    }
 
-                        setPostalCode(value);
-                      }}
-                      pattern="[A-Z][0-9][A-Z] [0-9][A-Z][0-9]"
-                      placeholder="A1A 1A1"
-                      className="mt-2 block w-full rounded-md border border-slate-700 bg-slate-950 px-4 py-3 text-lg text-slate-50 focus:border-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-400"
-                    />
-                    <p className="mt-1 text-xs text-slate-400">
-                      Example: M5V 2T6
-                    </p>
-                  </div>
+                    setPostalCode(value);
+                  }}
+                  pattern="[A-Z][0-9][A-Z] [0-9][A-Z][0-9]"
+                  placeholder="A1A 1A1"
+                  className="mt-2 block w-full rounded-md border border-slate-700 bg-slate-950 px-4 py-3 text-lg text-slate-50 focus:border-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                />
+                <p className="mt-1 text-xs text-slate-400">
+                  Example: M5V 2T6
+                </p>
+              </div>
 
+              {/* Northern Ontario toggle */}
+              <fieldset className="space-y-2">
+                <legend className="text-base font-medium text-slate-100">
+                  Do you live in Northern Ontario?
+                </legend>
+                <p className="text-sm text-slate-300">
+                  If you are not sure, answer as best you can. This helps with
+                  Northern Ontario Energy Credit–type supports.
+                </p>
+                <label className="inline-flex items-center gap-3 text-base text-slate-100">
+                  <input
+                    type="checkbox"
+                    checked={livesInNorthernOntario}
+                    onChange={(e) =>
+                      setLivesInNorthernOntario(e.target.checked)
+                    }
+                    className="h-5 w-5 rounded border-slate-700 bg-slate-950 text-yellow-400 focus:ring-2 focus:ring-yellow-400"
+                  />
+                  <span>Yes, I live in Northern Ontario</span>
+                </label>
+              </fieldset>
             </div>
           )}
 
@@ -280,18 +302,20 @@ export default function EligibilityPage() {
                   min={1}
                   step={1}
                   value={householdSize}
-                  onChange={(e) => setHouseholdSize(e.target.value.replace(/[^0-9]/g, ""))}
+                  onChange={(e) =>
+                    setHouseholdSize(e.target.value.replace(/[^0-9]/g, ""))
+                  }
                   className="mt-2 block w-full rounded-md border border-slate-700 bg-slate-950 px-4 py-3 text-lg text-slate-50 focus:border-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                 />
               </div>
-
 
               <div>
                 <label
                   htmlFor="householdIncome"
                   className="block text-base font-medium text-slate-100"
                 >
-                  About how much is your total household income per year, after tax?
+                  About how much is your total household income per year, after
+                  tax?
                 </label>
                 <div className="mt-2 flex items-center gap-2">
                   <span aria-hidden="true" className="text-lg">
@@ -304,13 +328,14 @@ export default function EligibilityPage() {
                     step={1000}
                     value={householdIncome}
                     onChange={(e) =>
-                      setHouseholdIncome(e.target.value.replace(/[^0-9]/g, ""))
+                      setHouseholdIncome(
+                        e.target.value.replace(/[^0-9]/g, "")
+                      )
                     }
                     className="block w-full rounded-md border border-slate-700 bg-slate-950 px-4 py-3 text-lg text-slate-50 focus:border-yellow-400 focus:outline-none focus:ring-2 focus:ring-yellow-400"
                   />
                 </div>
               </div>
-
             </div>
           )}
 
@@ -425,7 +450,9 @@ export default function EligibilityPage() {
                     <input
                       type="checkbox"
                       checked={hasDisability}
-                      onChange={(e) => setHasDisability(e.target.checked)}
+                      onChange={(e) =>
+                        setHasDisability(e.target.checked)
+                      }
                       className="h-5 w-5 rounded border-slate-700 bg-slate-950 text-yellow-400 focus:ring-2 focus:ring-yellow-400"
                     />
                     <span>
@@ -438,7 +465,7 @@ export default function EligibilityPage() {
           )}
 
           {/* Navigation */}
-          <div className="mt-6 flex items-center justify-between">
+          <div className="mt-6 flex items-center justify_between">
             <button
               type="button"
               onClick={handleBackClick}
