@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -87,14 +87,10 @@ export default function ApplicationPage() {
   const progress = ((currentStep + 1) / QUESTIONS.length) * 100;
   const isLastStep = currentStep === QUESTIONS.length - 1;
   const isAnswered =
-  answers[question.id] !== undefined &&
-  answers[question.id] !== "" &&
-  (question.id !== "postalCode" ||
-    /^[A-Z][0-9][A-Z] [0-9][A-Z][0-9]$/.test(
-      String(answers[question.id])
-    ));
-
-
+    answers[question.id] !== undefined &&
+    answers[question.id] !== "" &&
+    (question.id !== "postalCode" ||
+      /^[A-Z][0-9][A-Z] [0-9][A-Z][0-9]$/.test(String(answers[question.id])));
 
   const handleNext = () => {
     if (isLastStep) {
@@ -113,14 +109,15 @@ export default function ApplicationPage() {
   const handleAnswer = (value: string | number | boolean) => {
     setAnswers((prev) => ({
       ...prev,
-      [question.id]: typeof value === "boolean" ? (value ? "yes" : "no") : value,
+      [question.id]:
+        typeof value === "boolean" ? (value ? "yes" : "no") : value,
     }));
   };
 
   const handleBack = () => {
     if (currentStep === 0) {
       const ok = window.confirm(
-        "Are you sure you want to exit? Your answers will be lost."
+        "Are you sure you want to exit? Your answers will be lost.",
       );
       if (ok) {
         window.location.href = "/";
@@ -129,7 +126,6 @@ export default function ApplicationPage() {
     }
     handlePrevious();
   };
-
 
   const handleSubmit = async () => {
     try {
@@ -195,7 +191,12 @@ export default function ApplicationPage() {
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 400, damping: 30 }}
+            transition={{
+              delay: 0.2,
+              type: "spring",
+              stiffness: 400,
+              damping: 30,
+            }}
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -220,7 +221,9 @@ export default function ApplicationPage() {
           >
             Great job!
           </h2>
-          <p style={{ fontSize: "12px", color: "#6b7280", margin: "0 0 12px 0" }}>
+          <p
+            style={{ fontSize: "12px", color: "#6b7280", margin: "0 0 12px 0" }}
+          >
             We're calculating your personalized programs...
           </p>
           <motion.div
@@ -260,12 +263,20 @@ export default function ApplicationPage() {
           zIndex: 100,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <Link
+          href="/"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            textDecoration: "none",
+          }}
+        >
           <div
             style={{
-              width: "26px",
-              height: "26px",
-              borderRadius: "6px",
+              width: "27px",
+              height: "27px",
+              borderRadius: "7px",
               background: "#1d4ed8",
               display: "flex",
               alignItems: "center",
@@ -284,7 +295,7 @@ export default function ApplicationPage() {
           >
             SubsidyAccess
           </span>
-        </div>
+        </Link>
         <span
           style={{
             fontSize: "11px",
@@ -456,7 +467,13 @@ export default function ApplicationPage() {
 
               {/* SELECT */}
               {question.type === "select" && question.options && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "8px",
+                  }}
+                >
                   {question.options.map((opt, i) => (
                     <motion.button
                       key={opt.value}
@@ -507,65 +524,63 @@ export default function ApplicationPage() {
                 </div>
               )}
               {/* POSTAL CODE (X#X #X#) */}
-                {question.type === "postal" && (
-                  <motion.input
-                    initial={{ opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.15 }}
-                    type="text"
-                    placeholder="M5V 2T6"
-                    inputMode="text"
-                    autoComplete="postal-code"
-                    value={answers[question.id] || ""}
-                    onChange={(e) => {
-                      let v = e.target.value.toUpperCase();
+              {question.type === "postal" && (
+                <motion.input
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.15 }}
+                  type="text"
+                  placeholder="M5V 2T6"
+                  inputMode="text"
+                  autoComplete="postal-code"
+                  value={answers[question.id] || ""}
+                  onChange={(e) => {
+                    let v = e.target.value.toUpperCase();
 
-                      // Keep only letters, digits
-                      v = v.replace(/[^A-Z0-9]/g, "");
+                    // Keep only letters, digits
+                    v = v.replace(/[^A-Z0-9]/g, "");
 
-                      // Limit to 6 raw chars (e.g. M5V2T6)
-                      v = v.slice(0, 6);
+                    // Limit to 6 raw chars (e.g. M5V2T6)
+                    v = v.slice(0, 6);
 
-                      // Insert space after 3rd char if we have more than 3
-                      if (v.length > 3) {
-                        v = v.slice(0, 3) + " " + v.slice(3);
-                      }
+                    // Insert space after 3rd char if we have more than 3
+                    if (v.length > 3) {
+                      v = v.slice(0, 3) + " " + v.slice(3);
+                    }
 
-                      setAnswers((prev) => ({
-                        ...prev,
-                        [question.id]: v,
-                      }));
-                    }}
-
-                    style={{
-                      width: "100%",
-                      padding: "12px 14px",
-                      borderRadius: "10px",
-                      border:
-                        answers._postalValid === "no"
-                          ? "2px solid #dc2626"
-                          : "2px solid #e5e7eb",
-                      fontSize: "14px",
-                      color: "#111827",
-                      fontFamily: "inherit",
-                      boxSizing: "border-box",
-                      transition: "all 0.16s",
-                      letterSpacing: "0.08em",
-                    }}
-                    onFocus={(e) => {
-                      (e.target as HTMLInputElement).style.borderColor =
-                        answers._postalValid === "no" ? "#dc2626" : "#2563eb";
-                      (e.target as HTMLInputElement).style.boxShadow =
-                        "0 0 0 3px rgba(37,99,235,0.1)";
-                    }}
-                    onBlur={(e) => {
-                      (e.target as HTMLInputElement).style.borderColor =
-                        answers._postalValid === "no" ? "#dc2626" : "#e5e7eb";
-                      (e.target as HTMLInputElement).style.boxShadow = "none";
-                    }}
-                  />
-                )}
-
+                    setAnswers((prev) => ({
+                      ...prev,
+                      [question.id]: v,
+                    }));
+                  }}
+                  style={{
+                    width: "100%",
+                    padding: "12px 14px",
+                    borderRadius: "10px",
+                    border:
+                      answers._postalValid === "no"
+                        ? "2px solid #dc2626"
+                        : "2px solid #e5e7eb",
+                    fontSize: "14px",
+                    color: "#111827",
+                    fontFamily: "inherit",
+                    boxSizing: "border-box",
+                    transition: "all 0.16s",
+                    letterSpacing: "0.08em",
+                  }}
+                  onFocus={(e) => {
+                    (e.target as HTMLInputElement).style.borderColor =
+                      answers._postalValid === "no" ? "#dc2626" : "#2563eb";
+                    (e.target as HTMLInputElement).style.boxShadow =
+                      "0 0 0 3px rgba(37,99,235,0.1)";
+                  }}
+                  onBlur={(e) => {
+                    (e.target as HTMLInputElement).style.borderColor =
+                      answers._postalValid === "no" ? "#dc2626" : "#e5e7eb";
+                    (e.target as HTMLInputElement).style.boxShadow = "none";
+                  }}
+                />
+              )}
             </motion.div>
           </AnimatePresence>
 
@@ -604,7 +619,6 @@ export default function ApplicationPage() {
             >
               <ArrowLeft size={12} /> Back
             </motion.button>
-
 
             <motion.button
               initial={{ opacity: 0, x: 6 }}
@@ -650,8 +664,18 @@ export default function ApplicationPage() {
                 border: "1px solid #e5e7eb",
               }}
             >
-              <div style={{ display: "flex", gap: "8px", alignItems: "flex-start" }}>
-                <AlertCircle size={12} color="#9ca3af" style={{ marginTop: "1px", flexShrink: 0 }} />
+              <div
+                style={{
+                  display: "flex",
+                  gap: "8px",
+                  alignItems: "flex-start",
+                }}
+              >
+                <AlertCircle
+                  size={12}
+                  color="#9ca3af"
+                  style={{ marginTop: "1px", flexShrink: 0 }}
+                />
                 <p
                   style={{
                     margin: 0,
@@ -660,8 +684,8 @@ export default function ApplicationPage() {
                     lineHeight: 1.6,
                   }}
                 >
-                  Your information is encrypted and not stored. It's only used to
-                  calculate your eligibility.
+                  Your information is encrypted and not stored. It's only used
+                  to calculate your eligibility.
                 </p>
               </div>
             </motion.div>

@@ -33,12 +33,10 @@ export async function POST(req: NextRequest) {
       householdSize: Number(body.householdSize),
       annualIncome: Number(body.annualIncome),
       hasArrears: !!body.hasArrears,
-      isElectricHeat: !!body.isHeatedElectric,
-      isEnbridgeCustomer: !!body.hasEnbridge,
-      // map from frontend checkbox livesInNorthernOntario
-      isNorthernOntario: !!body.livesInNorthernOntario,
-      // map from frontend onOwOrOdsp
-      isOWSP: !!body.onOwOrOdsp,
+      isElectricHeat: !!body.isElectricHeat,
+      isEnbridgeCustomer: !!body.isEnbridgeCustomer,
+      isNorthernOntario: !!body.isNorthernOntario,
+      isOWSP: !!body.isOWSP,
       monthlyKwh:
         body.monthlyKwh !== undefined && body.monthlyKwh !== null
           ? Number(body.monthlyKwh)
