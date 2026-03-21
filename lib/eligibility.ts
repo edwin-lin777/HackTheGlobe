@@ -204,6 +204,7 @@ export function checkEligibility(profile: UserProfile): EligibleProgram[] {
     // ----------------------------------------------------------
     // Home Renovation Savings — everyone qualifies
     // ----------------------------------------------------------
+    
     else if (program.id === "home_renovation_savings") {
       eligible = true;
     }
