@@ -551,7 +551,7 @@ export default function EligibilityPage() {
           }}
         >
           <img
-            src="/logo.png"
+            src="/logor.png"
             alt="Navi$"
             style={{ height: 32, width: "auto" }}
           />
