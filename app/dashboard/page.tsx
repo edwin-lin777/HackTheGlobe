@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import {
   CheckCircle,
   Clock,
@@ -18,202 +19,6 @@ import {
   TrendingUp,
   ArrowRight,
 } from "lucide-react";
-
-function DocumentMasterChecklist({ programs }: { programs: Program[] }) {
-  const [checked, setChecked] = useState<Record<string, boolean>>({});
-
-  const docMap: Record<string, string[]> = {};
-  programs.forEach((p) => {
-    p.documents.forEach((doc) => {
-      if (!docMap[doc]) docMap[doc] = [];
-      if (!docMap[doc].includes(p.shortName)) docMap[doc].push(p.shortName);
-    });
-  });
-
-  const allDocs = Object.entries(docMap);
-  const doneCount = allDocs.filter(([doc]) => checked[doc]).length;
-  const pct =
-    allDocs.length > 0 ? Math.round((doneCount / allDocs.length) * 100) : 0;
-  const allDone = doneCount === allDocs.length && allDocs.length > 0;
-
-  return (
-    <div
-      style={{
-        background: "white",
-        border: "1px solid #e5e7eb",
-        borderRadius: "13px",
-        overflow: "hidden",
-        marginTop: "20px",
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{ padding: "14px 18px 12px", borderBottom: "1px solid #f3f4f6" }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            marginBottom: "10px",
-          }}
-        >
-          <div>
-            <p
-              style={{
-                margin: "0 0 2px",
-                fontSize: "13px",
-                fontWeight: "700",
-                color: "#111827",
-              }}
-            >
-              Documents checklist
-            </p>
-            <p style={{ margin: 0, fontSize: "11px", color: "#6b7280" }}>
-              Everything needed across all your programs — gather once
-            </p>
-          </div>
-          <span
-            style={{
-              background: allDone ? "#d1fae5" : "#f3f4f6",
-              color: allDone ? "#059669" : "#6b7280",
-              fontSize: "11px",
-              fontWeight: "700",
-              padding: "3px 10px",
-              borderRadius: "99px",
-              flexShrink: 0,
-            }}
-          >
-            {doneCount}/{allDocs.length} gathered
-          </span>
-        </div>
-        <div
-          style={{
-            height: "4px",
-            background: "#f3f4f6",
-            borderRadius: "99px",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              height: "100%",
-              borderRadius: "99px",
-              background: allDone ? "#059669" : "#2563eb",
-              width: `${pct}%`,
-              transition: "width 0.3s ease",
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Document rows */}
-      {allDocs.map(([doc, progs], i) => {
-        const done = !!checked[doc];
-        return (
-          <label
-            key={doc}
-            style={{
-              display: "flex",
-              alignItems: "flex-start",
-              gap: "12px",
-              padding: "11px 18px",
-              borderBottom:
-                i < allDocs.length - 1 ? "1px solid #f9fafb" : "none",
-              background: done ? "#fafafa" : "white",
-              cursor: "pointer",
-            }}
-            onClick={() =>
-              setChecked((prev) => ({ ...prev, [doc]: !prev[doc] }))
-            }
-          >
-            <div
-              style={{
-                width: "16px",
-                height: "16px",
-                borderRadius: "4px",
-                flexShrink: 0,
-                marginTop: "1px",
-                border: done ? "none" : "1.5px solid #d1d5db",
-                background: done ? "#059669" : "white",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                transition: "all 0.12s",
-              }}
-            >
-              {done && <CheckCircle size={10} color="white" />}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p
-                style={{
-                  margin: "0 0 5px",
-                  fontSize: "13px",
-                  color: done ? "#9ca3af" : "#374151",
-                  textDecoration: done ? "line-through" : "none",
-                  lineHeight: 1.4,
-                }}
-              >
-                {doc}
-              </p>
-              <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
-                {progs.map((prog) => {
-                  const matchedProg = programs.find(
-                    (p) => p.shortName === prog,
-                  );
-                  const t = matchedProg
-                    ? TYPE_CONFIG[matchedProg.type] || TYPE_CONFIG.ongoing
-                    : TYPE_CONFIG.ongoing;
-                  return (
-                    <span
-                      key={prog}
-                      style={{
-                        background: t.bg,
-                        color: t.color,
-                        border: `1px solid ${t.border}`,
-                        fontSize: "10px",
-                        fontWeight: "700",
-                        padding: "1px 6px",
-                        borderRadius: "99px",
-                      }}
-                    >
-                      {prog}
-                    </span>
-                  );
-                })}
-              </div>
-            </div>
-          </label>
-        );
-      })}
-
-      {allDone && (
-        <div
-          style={{
-            padding: "11px 18px",
-            background: "#f0fdf4",
-            borderTop: "1px solid #a7f3d0",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
-        >
-          <CheckCircle size={13} color="#059669" />
-          <p
-            style={{
-              margin: 0,
-              fontSize: "12px",
-              color: "#059669",
-              fontWeight: "600",
-            }}
-          >
-            All documents gathered — you're ready to apply!
-          </p>
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ================================================================
 // TYPES
@@ -254,7 +59,7 @@ type DashboardData = {
 };
 
 // ================================================================
-// DUMMY DATA — replace with sessionStorage when backend is ready
+// DUMMY DATA — fallback if sessionStorage empty
 // ================================================================
 const DUMMY: DashboardData = {
   programs: [
@@ -281,7 +86,8 @@ const DUMMY: DashboardData = {
       name: "Low-income Energy Assistance Program",
       shortName: "LEAP",
       type: "emergency",
-      description: `The Low-income Energy Assistance Program provides a one-time emergency payment to help low-income households cover overdue electricity or natural gas bills and avoid disconnection.`,
+      description:
+        "The Low-income Energy Assistance Program provides a one-time emergency payment to help low-income households cover overdue electricity or natural gas bills and avoid disconnection.",
       applyUrl: null,
       annualSaving: 650,
       monthlyCredit: null,
@@ -378,7 +184,7 @@ const STATUS_CONFIG: Record<
 };
 
 // ================================================================
-// 21DEV SAVINGS VISUALIZATION (adapted from BonusesIncentivesCard)
+// SAVINGS VISUALIZATION (dot ring)
 // ================================================================
 function SavingsVisualization({
   programs,
@@ -392,8 +198,11 @@ function SavingsVisualization({
 
   const cashPrograms = programs.filter((p) => p.annualSaving !== null);
   const freePrograms = programs.filter((p) => p.annualSaving === null);
-  const totalCash = cashPrograms.reduce((s, p) => s + (p.annualSaving ?? 0), 0);
-  const fillRatio = Math.min(totalCash / annualBill, 1);
+  const totalCash = cashPrograms.reduce(
+    (s, p) => s + (p.annualSaving ?? 0),
+    0,
+  );
+  const fillRatio = Math.min(annualBill > 0 ? totalCash / annualBill : 0, 1);
 
   const makeDots = (count: number, r: number, cx: number, cy: number) =>
     Array.from({ length: count }, (_, i) => {
@@ -487,7 +296,11 @@ function SavingsVisualization({
             ${totalCash.toLocaleString()}
           </p>
           <p
-            style={{ fontSize: "12px", color: "#6b7280", margin: "3px 0 0 0" }}
+            style={{
+              fontSize: "12px",
+              color: "#6b7280",
+              margin: "3px 0 0 0",
+            }}
           >
             per year
           </p>
@@ -548,7 +361,9 @@ function SavingsVisualization({
               fontWeight: "600",
             }}
           >
-            {Math.round((totalCash / annualBill) * 100)}% of bill
+            {annualBill > 0
+              ? `${Math.round((totalCash / annualBill) * 100)}% of bill`
+              : "0% of bill"}
           </p>
         </div>
         <div style={{ width: "1px", background: "#f3f4f6" }} />
@@ -602,7 +417,7 @@ function SavingsVisualization({
 }
 
 // ================================================================
-// SAVINGS MODAL
+// SAVINGS MODAL (unchanged usage)
 // ================================================================
 function SavingsModal({
   programs,
@@ -647,7 +462,6 @@ function SavingsModal({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div
           style={{
             display: "flex",
@@ -690,13 +504,11 @@ function SavingsModal({
           </button>
         </div>
 
-        {/* Dot visualization */}
         <SavingsVisualization
           programs={programs}
           annualBill={billImpact.annualBill}
         />
 
-        {/* Bill comparison bar */}
         <div
           style={{
             marginTop: "20px",
@@ -789,7 +601,6 @@ function SavingsModal({
           </p>
         </div>
 
-        {/* Per-program breakdown */}
         <div style={{ marginTop: "16px" }}>
           <p
             style={{
@@ -821,7 +632,11 @@ function SavingsModal({
                 }}
               >
                 <div
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                  }}
                 >
                   <div
                     style={{
@@ -857,7 +672,7 @@ function SavingsModal({
 }
 
 // ================================================================
-// PROGRAM CARD
+// PROGRAM CARD — UPDATED BUTTONS
 // ================================================================
 function ProgramCard({
   program,
@@ -875,6 +690,8 @@ function ProgramCard({
   const t = TYPE_CONFIG[program.type] || TYPE_CONFIG.ongoing;
   const s = STATUS_CONFIG[program.status];
   const completedDocs = checked.filter(Boolean).length;
+
+  const router = useRouter();
 
   return (
     <motion.div
@@ -1004,27 +821,58 @@ function ProgramCard({
             alignItems: "center",
           }}
         >
-          {program.applyUrl && (
-            <a
-              href={program.applyUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "4px",
-                background: t.color,
-                color: "white",
-                padding: "6px 12px",
-                borderRadius: "6px",
-                fontSize: "11px",
-                fontWeight: "600",
-                textDecoration: "none",
-              }}
-            >
-              Apply now <ExternalLink size={10} />
-            </a>
-          )}
+          {/* PRIMARY: Apply now → program website */}
+          <button
+            type="button"
+            onClick={() => {
+              if (!program.applyUrl) {
+                alert(
+                  "This program does not have an online portal. Call your local agency to apply.",
+                );
+                return;
+              }
+              window.open(program.applyUrl, "_blank", "noopener,noreferrer");
+            }}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "4px",
+              background: t.color,
+              padding: "6px 12px",
+              borderRadius: "6px",
+              fontSize: "11px",
+              fontWeight: "600",
+              border: "none",
+              cursor: "pointer",
+              color: "white",
+            }}
+          >
+            Apply now <ExternalLink size={10} />
+          </button>
+
+          {/* SECONDARY: Fill out info → intake (download PDF, etc.) */}
+          <button
+            type="button"
+            onClick={() =>
+              router.push(`/program-intake?programId=${program.id}`)
+            }
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "4px",
+              background: "white",
+              padding: "6px 12px",
+              borderRadius: "6px",
+              fontSize: "11px",
+              fontWeight: "600",
+              border: "1px solid #e5e7eb",
+              cursor: "pointer",
+              color: "#374151",
+            }}
+          >
+            Fill out info
+          </button>
+
           <select
             value={program.status}
             onChange={(e) =>
@@ -1159,6 +1007,343 @@ function ProgramCard({
 }
 
 // ================================================================
+// DOCUMENT MASTER CHECKLIST (unchanged behavior)
+// ================================================================
+function DocumentMasterChecklist({ programs }: { programs: Program[] }) {
+  const [checked, setChecked] = useState<Record<string, boolean>>({});
+
+  const docMap: Record<string, Program[]> = {};
+  programs.forEach((p) => {
+    p.documents.forEach((doc) => {
+      if (!docMap[doc]) docMap[doc] = [];
+      if (!docMap[doc].some((pp) => pp.id === p.id)) {
+        docMap[doc].push(p);
+      }
+    });
+  });
+
+  const sharedDocs = Object.entries(docMap).filter(
+    ([, progs]) => progs.length > 1,
+  );
+  const perProgramDocs: { program: Program; docs: string[] }[] = programs.map(
+    (p) => {
+      const docsForProgram = p.documents.filter((doc) => {
+        const progs = docMap[doc] || [];
+        return progs.length === 1;
+      });
+      return { program: p, docs: Array.from(new Set(docsForProgram)) };
+    },
+  );
+
+  const programDocKeys = perProgramDocs.flatMap(({ program, docs }) =>
+    docs.map((doc) => `${program.id}::${doc}`),
+  );
+  const sharedDocKeys = sharedDocs.map(([doc]) => `shared::${doc}`);
+  const allKeys = [...programDocKeys, ...sharedDocKeys];
+
+  const doneCount = allKeys.filter((k) => checked[k]).length;
+  const pct =
+    allKeys.length > 0 ? Math.round((doneCount / allKeys.length) * 100) : 0;
+  const allDone = doneCount === allKeys.length && allKeys.length > 0;
+
+  return (
+    <div
+      style={{
+        background: "white",
+        border: "1px solid #e5e7eb",
+        borderRadius: "13px",
+        overflow: "hidden",
+        marginTop: "20px",
+      }}
+    >
+      <div
+        style={{ padding: "14px 18px 12px", borderBottom: "1px solid #f3f4f6" }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            marginBottom: "10px",
+          }}
+        >
+          <div>
+            <p
+              style={{
+                margin: "0 0 2px",
+                fontSize: "13px",
+                fontWeight: "700",
+                color: "#111827",
+              }}
+            >
+              Documents checklist
+            </p>
+            <p style={{ margin: 0, fontSize: "11px", color: "#6b7280" }}>
+              Everything needed by program — gather once
+            </p>
+          </div>
+          <span
+            style={{
+              background: allDone ? "#d1fae5" : "#f3f4f6",
+              color: allDone ? "#059669" : "#6b7280",
+              fontSize: "11px",
+              fontWeight: "700",
+              padding: "3px 10px",
+              borderRadius: "99px",
+              flexShrink: 0,
+            }}
+          >
+            {doneCount}/{allKeys.length} gathered
+          </span>
+        </div>
+        <div
+          style={{
+            height: "4px",
+            background: "#f3f4f6",
+            borderRadius: "99px",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              height: "100%",
+              borderRadius: "99px",
+              background: allDone ? "#059669" : "#2563eb",
+              width: `${pct}%`,
+              transition: "width 0.3s ease",
+            }}
+          />
+        </div>
+      </div>
+
+      {perProgramDocs.map(({ program, docs }, idx) => {
+        if (docs.length === 0) return null;
+        const t = TYPE_CONFIG[program.type] || TYPE_CONFIG.ongoing;
+
+        return (
+          <div
+            key={program.id}
+            style={{
+              borderBottom:
+                idx < perProgramDocs.length - 1 || sharedDocs.length > 0
+                  ? "1px solid #f9fafb"
+                  : "none",
+              padding: "10px 18px 12px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                marginBottom: "6px",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  color: "#111827",
+                }}
+              >
+                {program.name}
+              </span>
+              <span
+                style={{
+                  background: t.bg,
+                  color: t.color,
+                  border: `1px solid ${t.border}`,
+                  fontSize: "10px",
+                  fontWeight: "700",
+                  padding: "1px 6px",
+                  borderRadius: "99px",
+                }}
+              >
+                {program.shortName}
+              </span>
+            </div>
+
+            {docs.map((doc) => {
+              const key = `${program.id}::${doc}`;
+              const done = !!checked[key];
+              return (
+                <label
+                  key={key}
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: "10px",
+                    padding: "6px 0",
+                    cursor: "pointer",
+                  }}
+                  onClick={() =>
+                    setChecked((prev) => ({ ...prev, [key]: !prev[key] }))
+                  }
+                >
+                  <div
+                    style={{
+                      width: "16px",
+                      height: "16px",
+                      borderRadius: "4px",
+                      flexShrink: 0,
+                      marginTop: "2px",
+                      border: done ? "none" : "1.5px solid #d1d5db",
+                      background: done ? "#059669" : "white",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      transition: "all 0.12s",
+                    }}
+                  >
+                    {done && <CheckCircle size={10} color="white" />}
+                  </div>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: "13px",
+                      color: done ? "#9ca3af" : "#374151",
+                      textDecoration: done ? "line-through" : "none",
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {doc}
+                  </p>
+                </label>
+              );
+            })}
+          </div>
+        );
+      })}
+
+      {sharedDocs.length > 0 && (
+        <div
+          style={{
+            padding: "10px 18px 12px",
+            borderTop: "1px solid #f3f4f6",
+          }}
+        >
+          <p
+            style={{
+              margin: "0 0 6px",
+              fontSize: "11px",
+              fontWeight: 700,
+              color: "#6b7280",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+            }}
+          >
+            Shared documents
+          </p>
+          {sharedDocs.map(([doc, progs]) => {
+            const key = `shared::${doc}`;
+            const done = !!checked[key];
+            return (
+              <label
+                key={key}
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "10px",
+                  padding: "6px 0",
+                  cursor: "pointer",
+                }}
+                onClick={() =>
+                  setChecked((prev) => ({ ...prev, [key]: !prev[key] }))
+                }
+              >
+                <div
+                  style={{
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "4px",
+                    flexShrink: 0,
+                    marginTop: "2px",
+                    border: done ? "none" : "1.5px solid #d1d5db",
+                    background: done ? "#059669" : "white",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "all 0.12s",
+                  }}
+                >
+                  {done && <CheckCircle size={10} color="white" />}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p
+                    style={{
+                      margin: "0 0 3px",
+                      fontSize: "13px",
+                      color: done ? "#9ca3af" : "#374151",
+                      textDecoration: done ? "line-through" : "none",
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {doc}
+                  </p>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "4px",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    {progs.map((p) => {
+                      const tt =
+                        TYPE_CONFIG[p.type] || TYPE_CONFIG.ongoing;
+                      return (
+                        <span
+                          key={p.id}
+                          style={{
+                            background: tt.bg,
+                            color: tt.color,
+                            border: `1px solid ${tt.border}`,
+                            fontSize: "10px",
+                            fontWeight: "700",
+                            padding: "1px 6px",
+                            borderRadius: "99px",
+                          }}
+                        >
+                          {p.shortName}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              </label>
+            );
+          })}
+        </div>
+      )}
+
+      {allDone && (
+        <div
+          style={{
+            padding: "11px 18px",
+            background: "#f0fdf4",
+            borderTop: "1px solid #a7f3d0",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <CheckCircle size={13} color="#059669" />
+          <p
+            style={{
+              margin: 0,
+              fontSize: "12px",
+              color: "#059669",
+              fontWeight: "600",
+            }}
+          >
+            All documents gathered — you're ready to apply!
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ================================================================
 // AGENCY CARD
 // ================================================================
 function AgencyCard({ agency }: { agency: DashboardData["agency"] }) {
@@ -1230,8 +1415,7 @@ function AgencyCard({ agency }: { agency: DashboardData["agency"] }) {
                 color: "#374151",
               }}
             >
-              <Phone size={11} color="#d97706" />{" "}
-              <strong>{agency.phone}</strong>
+              <Phone size={11} color="#d97706" /> <strong>{agency.phone}</strong>
             </div>
             <div
               style={{
@@ -1316,11 +1500,26 @@ export default function Dashboard() {
     const stored = sessionStorage.getItem("eligibilityResult");
     if (stored) {
       try {
-        const parsed = JSON.parse(stored);
+        const parsed = JSON.parse(stored) as DashboardData;
         setData(parsed);
-        setPrograms(parsed.programs);
+
+        let progs: Program[] = parsed.programs;
+
+        const statusRaw = sessionStorage.getItem("programStatuses");
+        if (statusRaw) {
+          try {
+            const statusMap = JSON.parse(statusRaw) as Record<string, Status>;
+            progs = progs.map((p) =>
+              statusMap[p.id] ? { ...p, status: statusMap[p.id] } : p,
+            );
+          } catch {
+            // ignore
+          }
+        }
+
+        setPrograms(progs);
       } catch {
-        // fall back to dummy data
+        // fallback uses DUMMY
       }
     }
     setLoaded(true);
@@ -1328,14 +1527,21 @@ export default function Dashboard() {
 
   const hasLEAP = programs.some((p) => p.id === "leap");
   const visibleAlerts = data.alerts.filter((a) => !dismissed.includes(a.id));
-  const submittedCount = programs.filter(
-    (p) => p.status === "submitted",
-  ).length;
+  const submittedCount = programs.filter((p) => p.status === "submitted")
+    .length;
+  const cashPrograms = programs.filter((p) => p.annualSaving !== null);
 
   function handleStatus(id: string, status: Status) {
     setPrograms((prev) =>
       prev.map((p) => (p.id === id ? { ...p, status } : p)),
     );
+
+    const statusRaw = sessionStorage.getItem("programStatuses");
+    const statusMap: Record<string, Status> = statusRaw
+      ? JSON.parse(statusRaw)
+      : {};
+    statusMap[id] = status;
+    sessionStorage.setItem("programStatuses", JSON.stringify(statusMap));
   }
 
   if (!loaded)
@@ -1366,6 +1572,17 @@ export default function Dashboard() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800;9..40,900&display=swap');
         * { box-sizing: border-box; }
+
+        @media (max-width: 900px) {
+          .results-layout {
+            flex-direction: column;
+          }
+          .results-right {
+            position: static !important;
+            max-width: 100% !important;
+            margin-top: 16px;
+          }
+        }
       `}</style>
 
       {/* NAV */}
@@ -1440,16 +1657,15 @@ export default function Dashboard() {
       {/* CONTENT */}
       <div
         style={{
-          maxWidth: "640px",
+          maxWidth: "1120px",
           margin: "0 auto",
-          padding: "22px 16px 60px",
+          padding: "20px 24px 40px",
         }}
       >
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
-          style={{ marginBottom: "18px" }}
+          style={{ marginBottom: "14px" }}
         >
           <h1
             style={{
@@ -1475,7 +1691,7 @@ export default function Dashboard() {
         {visibleAlerts.length > 0 && (
           <div
             style={{
-              marginBottom: "14px",
+              marginBottom: "10px",
               display: "flex",
               flexDirection: "column",
               gap: "6px",
@@ -1491,7 +1707,7 @@ export default function Dashboard() {
                   background: "#eff6ff",
                   border: "1px solid #bfdbfe",
                   borderRadius: "9px",
-                  padding: "9px 12px",
+                  padding: "8px 10px",
                   display: "flex",
                   gap: "8px",
                   alignItems: "flex-start",
@@ -1541,195 +1757,18 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* SAVINGS BANNER */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.08 }}
+        {/* 60/40 LAYOUT */}
+        <div
+          className="results-layout"
           style={{
-            background:
-              "linear-gradient(135deg, #0f172a 0%, #1e3a5f 55%, #1e40af 100%)",
-            borderRadius: "16px",
-            padding: "22px 26px",
-            marginBottom: "18px",
-            color: "white",
-            position: "relative",
-            overflow: "hidden",
+            display: "flex",
+            gap: "18px",
+            alignItems: "flex-start",
+            marginTop: "4px",
           }}
         >
-          <div
-            style={{
-              position: "absolute",
-              top: "-16px",
-              right: "-16px",
-              width: "100px",
-              height: "100px",
-              borderRadius: "50%",
-              background: "rgba(59,130,246,0.12)",
-              pointerEvents: "none",
-            }}
-          />
-
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              flexWrap: "wrap",
-              gap: "10px",
-            }}
-          >
-            <div>
-              <p
-                style={{
-                  fontSize: "10px",
-                  opacity: 0.5,
-                  margin: "0 0 2px 0",
-                  letterSpacing: "0.05em",
-                  textTransform: "uppercase",
-                }}
-              >
-                {data.billImpact.ldcName}
-              </p>
-              <p
-                style={{ fontSize: "11px", opacity: 0.6, margin: "0 0 10px 0" }}
-              >
-                Current annual bill:{" "}
-                <strong style={{ color: "white" }}>
-                  ${data.billImpact.annualBill.toLocaleString()}
-                </strong>
-              </p>
-              <p
-                style={{ fontSize: "10px", opacity: 0.5, margin: "0 0 2px 0" }}
-              >
-                Potential annual savings
-              </p>
-              <p
-                style={{
-                  fontSize: "42px",
-                  fontWeight: "900",
-                  margin: 0,
-                  lineHeight: 1,
-                  color: "#34d399",
-                  letterSpacing: "-0.03em",
-                }}
-              >
-                ${data.billImpact.totalAnnualSaving.toLocaleString()}
-              </p>
-            </div>
-            <div
-              style={{
-                background: "rgba(52,211,153,0.15)",
-                border: "1px solid rgba(52,211,153,0.25)",
-                borderRadius: "9px",
-                padding: "7px 12px",
-                textAlign: "center",
-              }}
-            >
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: "18px",
-                  fontWeight: "900",
-                  color: "#34d399",
-                }}
-              >
-                {data.billImpact.savingPercentage}%
-              </p>
-              <p style={{ margin: 0, fontSize: "10px", opacity: 0.6 }}>
-                of bill
-              </p>
-            </div>
-          </div>
-
-          {/* Progress */}
-          <div style={{ marginTop: "14px" }}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: "4px",
-              }}
-            >
-              <span style={{ fontSize: "10px", opacity: 0.45 }}>
-                Application progress
-              </span>
-              <span style={{ fontSize: "10px", opacity: 0.45 }}>
-                {submittedCount}/{programs.length} submitted
-              </span>
-            </div>
-            <div
-              style={{
-                height: "3px",
-                background: "rgba(255,255,255,0.1)",
-                borderRadius: "99px",
-                overflow: "hidden",
-              }}
-            >
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{
-                  width: `${programs.length > 0 ? (submittedCount / programs.length) * 100 : 0}%`,
-                }}
-                transition={{ delay: 0.5, duration: 0.5, ease: "easeOut" }}
-                style={{
-                  height: "100%",
-                  borderRadius: "99px",
-                  background: "linear-gradient(90deg, #34d399, #10b981)",
-                }}
-              />
-            </div>
-          </div>
-
-          {/* View breakdown CTA */}
-          <button
-            onClick={() => setShowSavings(true)}
-            style={{
-              marginTop: "14px",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "5px",
-              background: "rgba(255,255,255,0.1)",
-              border: "1px solid rgba(255,255,255,0.15)",
-              borderRadius: "7px",
-              padding: "6px 12px",
-              fontSize: "11px",
-              fontWeight: "600",
-              color: "rgba(255,255,255,0.8)",
-              cursor: "pointer",
-            }}
-          >
-            <TrendingUp size={11} /> View savings breakdown{" "}
-            <ArrowRight size={10} />
-          </button>
-        </motion.div>
-
-        {/* PROGRAMS LABEL */}
-        <p
-          style={{
-            fontSize: "10px",
-            fontWeight: "700",
-            color: "#9ca3af",
-            textTransform: "uppercase",
-            letterSpacing: "0.1em",
-            margin: "0 0 10px 0",
-          }}
-        >
-          Programs you qualify for
-        </p>
-
-        {programs.map((p, i) => (
-          <ProgramCard
-            key={p.id}
-            program={p}
-            onStatusChange={handleStatus}
-            index={i}
-          />
-        ))}
-
-        {/* LEAP AGENCY */}
-        {hasLEAP && (
-          <>
+          {/* LEFT: programs + agency */}
+          <div style={{ flex: 3, minWidth: 0 }}>
             <p
               style={{
                 fontSize: "10px",
@@ -1737,50 +1776,264 @@ export default function Dashboard() {
                 color: "#9ca3af",
                 textTransform: "uppercase",
                 letterSpacing: "0.1em",
-                margin: "16px 0 10px 0",
+                margin: "0 0 8px 0",
               }}
             >
-              LEAP intake agency
+              Programs you qualify for
             </p>
-            <AgencyCard agency={data.agency} />
-          </>
-        )}
 
-        {/* Footer */}
-        <DocumentMasterChecklist programs={programs} />
+            {programs.map((program, i) => (
+              <ProgramCard
+                key={program.id}
+                program={program}
+                onStatusChange={handleStatus}
+                index={i}
+              />
+            ))}
+
+            {hasLEAP && (
+              <>
+                <p
+                  style={{
+                    fontSize: "10px",
+                    fontWeight: "700",
+                    color: "#9ca3af",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    margin: "14px 0 8px 0",
+                  }}
+                >
+                  LEAP intake agency
+                </p>
+                <AgencyCard agency={data.agency} />
+              </>
+            )}
+          </div>
+
+          {/* RIGHT: savings + visualization */}
+          <div
+            className="results-right"
+            style={{
+              flex: 2.3,
+              minWidth: "280px",
+              maxWidth: "420px",
+              position: "sticky",
+              top: 72,
+            }}
+          >
+            {/* SAVINGS BANNER */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.08 }}
+              style={{
+                background:
+                  "linear-gradient(135deg, #0f172a 0%, #1e3a5f 55%, #1e40af 100%)",
+                borderRadius: "16px",
+                padding: "16px 18px",
+                marginBottom: "8px",
+                color: "white",
+                position: "relative",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  top: "-16px",
+                  right: "-16px",
+                  width: "100px",
+                  height: "100px",
+                  borderRadius: "50%",
+                  background: "rgba(59,130,246,0.12)",
+                  pointerEvents: "none",
+                }}
+              />
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "flex-start",
+                  flexWrap: "wrap",
+                  gap: "10px",
+                }}
+              >
+                <div>
+                  <p
+                    style={{
+                      fontSize: "10px",
+                      opacity: 0.5,
+                      margin: "0 0 2px 0",
+                      letterSpacing: "0.05em",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {data.billImpact.ldcName}
+                  </p>
+                  <p
+                    style={{
+                      fontSize: "11px",
+                      opacity: 0.6,
+                      margin: "0 0 8px 0",
+                    }}
+                  >
+                    Current annual bill:{" "}
+                    <strong style={{ color: "white" }}>
+                      ${data.billImpact.annualBill.toLocaleString()}
+                    </strong>
+                  </p>
+                  <p
+                    style={{
+                      fontSize: "10px",
+                      opacity: 0.5,
+                      margin: "0 0 2px 0",
+                    }}
+                  >
+                    Potential annual savings
+                  </p>
+                  <p
+                    style={{
+                      fontSize: "30px",
+                      fontWeight: "900",
+                      margin: 0,
+                      lineHeight: 1,
+                      color: "#34d399",
+                      letterSpacing: "-0.03em",
+                    }}
+                  >
+                    ${data.billImpact.totalAnnualSaving.toLocaleString()}
+                  </p>
+                </div>
+                <div
+                  style={{
+                    background: "rgba(52,211,153,0.15)",
+                    border: "1px solid rgba(52,211,153,0.25)",
+                    borderRadius: "9px",
+                    padding: "6px 10px",
+                    textAlign: "center",
+                  }}
+                >
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: "16px",
+                      fontWeight: "900",
+                      color: "#34d399",
+                    }}
+                  >
+                    {data.billImpact.savingPercentage}%
+                  </p>
+                  <p
+                    style={{ margin: 0, fontSize: "10px", opacity: 0.6 }}
+                  >
+                    of bill
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* SAVINGS VISUALIZATION */}
+            <div
+              style={{
+                background: "white",
+                borderRadius: "14px",
+                border: "1px solid #e5e7eb",
+                padding: "12px 8px 8px",
+                marginBottom: "8px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "4px",
+                }}
+              >
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    color: "#111827",
+                  }}
+                >
+                  How your savings add up
+                </p>
+                <span
+                  style={{
+                    fontSize: "10px",
+                    color: "#6b7280",
+                  }}
+                >
+                  vs. your ${data.billImpact.annualBill.toLocaleString()}/year bill
+                </span>
+              </div>
+              <SavingsVisualization
+                programs={programs}
+                annualBill={data.billImpact.annualBill}
+              />
+            </div>
+
+            {/* INLINE SAVINGS BREAKDOWN */}
+            <div
+              style={{
+                background: "white",
+                borderRadius: "12px",
+                border: "1px solid #e5e7eb",
+                padding: "10px 12px",
+                marginBottom: "8px",
+                fontSize: "12px",
+                color: "#4b5563",
+              }}
+            >
+              <p
+                style={{
+                  margin: "0 0 6px",
+                  fontWeight: 600,
+                  fontSize: "12px",
+                  color: "#111827",
+                }}
+              >
+                Savings by program
+              </p>
+              {cashPrograms.length === 0 && (
+                <p
+                  style={{ margin: 0, fontSize: "11px", color: "#6b7280" }}
+                >
+                  Your programs mainly reduce usage over time.
+                </p>
+              )}
+              {cashPrograms.map((p) => (
+                <div
+                  key={p.id}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: "2px",
+                  }}
+                >
+                  <span>{p.shortName}</span>
+                  <span>
+                    ${(p.annualSaving ?? 0).toLocaleString()}/year
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* FULL-WIDTH DOCUMENT CHECKLIST */}
         <div
           style={{
             marginTop: "20px",
-            padding: "11px 14px",
-            background: "white",
-            borderRadius: "9px",
-            border: "1px solid #e5e7eb",
-            display: "flex",
-            gap: "8px",
-            alignItems: "flex-start",
           }}
         >
-          <AlertCircle
-            size={12}
-            color="#9ca3af"
-            style={{ flexShrink: 0, marginTop: "1px" }}
-          />
-          <p
-            style={{
-              margin: 0,
-              fontSize: "11px",
-              color: "#9ca3af",
-              lineHeight: 1.6,
-            }}
-          >
-            Savings estimates based on real 2026 OEB rate data. Actual amounts
-            may vary. Verify eligibility directly with each program before
-            applying.
-          </p>
+          <DocumentMasterChecklist programs={programs} />
         </div>
       </div>
 
-      {/* SAVINGS MODAL */}
+      {/* OPTIONAL: savings modal trigger if you reuse showSavings flag */}
       <AnimatePresence>
         {showSavings && (
           <SavingsModal

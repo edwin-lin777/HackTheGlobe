@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { CheckIcon, ArrowRightIcon, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { Zap } from "lucide-react";
+
 // ================================================================
 // TOAST
 // ================================================================
@@ -48,15 +49,21 @@ function ToastContainer({
               t.type === "success"
                 ? "#f0fdf4"
                 : t.type === "error"
-                  ? "#fef2f2"
-                  : "#eff6ff",
-            border: `1px solid ${t.type === "success" ? "#a7f3d0" : t.type === "error" ? "#fecaca" : "#bfdbfe"}`,
+                ? "#fef2f2"
+                : "#eff6ff",
+            border: `1px solid ${
+              t.type === "success"
+                ? "#a7f3d0"
+                : t.type === "error"
+                ? "#fecaca"
+                : "#bfdbfe"
+            }`,
             color:
               t.type === "success"
                 ? "#065f46"
                 : t.type === "error"
-                  ? "#ff4d4d"
-                  : "#1e40af",
+                ? "#ff4d4d"
+                : "#1e40af",
             borderRadius: 12,
             padding: "11px 16px",
             fontSize: 13,
@@ -133,7 +140,7 @@ function CloudMascot({ isTypingPassword }: { isTypingPassword: boolean }) {
     return () => clearInterval(t);
   }, []);
 
-  const eyeRy = isTypingPassword ? 1 : blink ? 2 : 11; // taller = more oval
+  const eyeRy = isTypingPassword ? 1 : blink ? 2 : 11;
 
   return (
     <div
@@ -152,7 +159,6 @@ function CloudMascot({ isTypingPassword }: { isTypingPassword: boolean }) {
           </filter>
         </defs>
 
-        {/* Cloud body */}
         <ellipse
           cx="75"
           cy="65"
@@ -165,7 +171,6 @@ function CloudMascot({ isTypingPassword }: { isTypingPassword: boolean }) {
         <circle cx="75" cy="42" r="26" fill="#f1f5f9" />
         <circle cx="106" cy="50" r="18" fill="#f1f5f9" />
 
-        {/* Left eye — rx wider than ry for oval */}
         <ellipse
           cx="62"
           cy="48"
@@ -185,7 +190,6 @@ function CloudMascot({ isTypingPassword }: { isTypingPassword: boolean }) {
           />
         )}
 
-        {/* Right eye */}
         <ellipse
           cx="90"
           cy="48"
@@ -205,7 +209,6 @@ function CloudMascot({ isTypingPassword }: { isTypingPassword: boolean }) {
           />
         )}
 
-        {/* Smile + cheeks */}
         <path
           d="M 60 68 Q 75 76 90 68"
           stroke="#94a3b8"
@@ -217,8 +220,9 @@ function CloudMascot({ isTypingPassword }: { isTypingPassword: boolean }) {
     </div>
   );
 }
+
 // ================================================================
-// STEP DOTS  (shadcn-style from reference)
+// STEP DOTS
 // ================================================================
 function StepDots({ steps, current }: { steps: string[]; current: number }) {
   return (
@@ -241,7 +245,6 @@ function StepDots({ steps, current }: { steps: string[]; current: number }) {
               gap: 6,
             }}
           >
-            {/* Circle */}
             <div
               style={{
                 position: "relative",
@@ -257,14 +260,14 @@ function StepDots({ steps, current }: { steps: string[]; current: number }) {
                   i < current
                     ? "rgba(0,0,0,0.08)"
                     : i === current
-                      ? "#111827"
-                      : "rgba(0,0,0,0.04)",
+                    ? "#111827"
+                    : "rgba(0,0,0,0.04)",
                 color:
                   i < current
                     ? "rgba(0,0,0,0.5)"
                     : i === current
-                      ? "white"
-                      : "rgba(0,0,0,0.25)",
+                    ? "white"
+                    : "rgba(0,0,0,0.25)",
                 boxShadow:
                   i === current ? "0 0 0 4px rgba(17,24,39,0.08)" : "none",
                 transition: "all 0.5s ease",
@@ -279,7 +282,6 @@ function StepDots({ steps, current }: { steps: string[]; current: number }) {
               ) : (
                 <span>{i + 1}</span>
               )}
-              {/* pulse ring for current */}
               {i === current && (
                 <div
                   style={{
@@ -305,7 +307,6 @@ function StepDots({ steps, current }: { steps: string[]; current: number }) {
               {label}
             </span>
           </div>
-          {/* Connector line */}
           {i < steps.length - 1 && (
             <div
               style={{
@@ -436,10 +437,14 @@ export default function EligibilityPage() {
       return toast("Please enter your last name.", "error");
     if (!account.email.includes("@"))
       return toast("Please enter a valid email address.", "error");
-    if (!/^[A-Za-z]\d[A-Za-z]/.test(account.postalCode.replace(/\s/, "")))
-      return toast("Enter a valid Canadian postal code.", "error");
+
+    const pc = account.postalCode.toUpperCase().replace(/\s+/g, "");
+    if (!/^[A-Z]\d[A-Z]\d[A-Z]\d$/.test(pc))
+      return toast('Enter a postal code like "M5V 2T6".', "error");
+
     if (account.password.length < 6)
       return toast("Password must be at least 6 characters.", "error");
+
     setAnswers((prev) => ({ ...prev, postalCode: account.postalCode }));
     toast("Account info saved — let's check your eligibility!", "success");
     setTimeout(() => setPhase("eligibility"), 350);
@@ -461,7 +466,7 @@ export default function EligibilityPage() {
     setSubmitting(true);
     toast("Checking your eligibility…", "info");
     const payload = {
-      postalCode: answers.postalCode || account.postalCode,
+      postalCode: account.postalCode,
       householdSize: parseInt(answers.householdSize) || 1,
       annualIncome: parseInt(answers.annualIncome) || 0,
       hasArrears: answers.hasArrears === "yes",
@@ -499,7 +504,6 @@ export default function EligibilityPage() {
     }),
   );
 
-  // ── Shared input style ──
   const inputStyle: React.CSSProperties = {
     width: "100%",
     height: 48,
@@ -523,9 +527,7 @@ export default function EligibilityPage() {
         background:
           "linear-gradient(135deg, #f0f9ff 0%, #fafafa 55%, #fdf4ff 100%)",
         display: "flex",
-
         flexDirection: "column",
-
         fontFamily: "'DM Sans', 'Segoe UI', system-ui, sans-serif",
       }}
     >
@@ -582,13 +584,11 @@ export default function EligibilityPage() {
       >
         <div style={{ width: "100%", maxWidth: 380 }}>
           <div style={{ width: "100%", maxWidth: 380 }}>
-            {/* Step dots */}
             <StepDots
               steps={["Your info", "Eligibility"]}
               current={phase === "account" ? 0 : 1}
             />
 
-            {/* Card */}
             <div
               style={{
                 background: "rgba(255,255,255,0.55)",
@@ -602,7 +602,6 @@ export default function EligibilityPage() {
                 overflow: "hidden",
               }}
             >
-              {/* ═══ PHASE 1: ACCOUNT ═══ */}
               {phase === "account" && (
                 <div style={{ animation: "fadeUp 0.4s ease" }}>
                   <CloudMascot isTypingPassword={isTypingPassword} />
@@ -631,7 +630,6 @@ export default function EligibilityPage() {
                       gap: 11,
                     }}
                   >
-                    {/* Name row */}
                     <div
                       style={{
                         display: "grid",
@@ -679,7 +677,6 @@ export default function EligibilityPage() {
                       ))}
                     </div>
 
-                    {/* Email */}
                     <div
                       style={{
                         display: "flex",
@@ -708,7 +705,6 @@ export default function EligibilityPage() {
                       />
                     </div>
 
-                    {/* Postal */}
                     <div
                       style={{
                         display: "flex",
@@ -730,16 +726,37 @@ export default function EligibilityPage() {
                         style={inputStyle}
                         placeholder="M5V 2T6"
                         value={account.postalCode}
-                        onChange={(e) =>
+                        onChange={(e) => {
+                          let val = e.target.value
+                            .toUpperCase()
+                            .replace(/[^A-Z0-9]/g, "");
+                          if (val.length > 6) val = val.slice(0, 6);
+
+                          let formatted = "";
+                          for (let i = 0; i < val.length; i++) {
+                            const ch = val[i];
+                            if (i === 0 || i === 2 || i === 4) {
+                              if (/[A-Z]/.test(ch)) formatted += ch;
+                            } else {
+                              if (/\d/.test(ch)) formatted += ch;
+                            }
+                          }
+
+                          if (formatted.length > 3) {
+                            formatted =
+                              formatted.slice(0, 3) +
+                              " " +
+                              formatted.slice(3);
+                          }
+
                           setAccount((a) => ({
                             ...a,
-                            postalCode: e.target.value.toUpperCase(),
-                          }))
-                        }
+                            postalCode: formatted,
+                          }));
+                        }}
                       />
                     </div>
 
-                    {/* Password */}
                     <div
                       style={{
                         display: "flex",
@@ -815,10 +832,8 @@ export default function EligibilityPage() {
                 </div>
               )}
 
-              {/* ═══ PHASE 2: ELIGIBILITY (one question at a time) ═══ */}
               {phase === "eligibility" && (
                 <div key={qIndex} style={{ animation: "fadeUp 0.35s ease" }}>
-                  {/* Progress bar */}
                   <div
                     style={{
                       height: 2,
@@ -841,7 +856,6 @@ export default function EligibilityPage() {
                   </div>
 
                   <div style={{ marginBottom: 28 }}>
-                    {/* Question label + counter */}
                     <div
                       style={{
                         display: "flex",
@@ -888,9 +902,7 @@ export default function EligibilityPage() {
                       </p>
                     )}
 
-                    {/* Text/number input */}
-                    {(currentQ.type === "text" ||
-                      currentQ.type === "number") && (
+                    {currentQ.type === "number" && (
                       <input
                         key={currentQ.key}
                         type={currentQ.type}
@@ -908,7 +920,6 @@ export default function EligibilityPage() {
                       />
                     )}
 
-                    {/* Yes/No */}
                     {currentQ.type === "yesno" && (
                       <div
                         style={{
@@ -933,7 +944,9 @@ export default function EligibilityPage() {
                               style={{
                                 height: 52,
                                 borderRadius: 10,
-                                border: `1.5px solid ${sel ? "#111827" : "rgba(0,0,0,0.1)"}`,
+                                border: `1.5px solid ${
+                                  sel ? "#111827" : "rgba(0,0,0,0.1)"
+                                }`,
                                 background: sel
                                   ? "#111827"
                                   : "rgba(255,255,255,0.5)",
@@ -954,9 +967,12 @@ export default function EligibilityPage() {
                     )}
                   </div>
 
-                  {/* Actions */}
                   <div
-                    style={{ display: "flex", flexDirection: "column", gap: 8 }}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 8,
+                    }}
                   >
                     <button
                       onClick={handleNext}
@@ -981,17 +997,19 @@ export default function EligibilityPage() {
                         transition: "opacity 0.2s",
                       }}
                       onMouseEnter={(e) =>
-                        !submitting && (e.currentTarget.style.opacity = "0.85")
+                        !submitting &&
+                        (e.currentTarget.style.opacity = "0.85")
                       }
                       onMouseLeave={(e) =>
-                        !submitting && (e.currentTarget.style.opacity = "1")
+                        !submitting &&
+                        (e.currentTarget.style.opacity = "1")
                       }
                     >
                       {submitting
                         ? "Checking…"
                         : qIndex < QUESTIONS.length - 1
-                          ? "Continue"
-                          : "See my results"}
+                        ? "Continue"
+                        : "See my results"}
                       {!submitting && (
                         <ArrowRightIcon size={14} strokeWidth={2} />
                       )}
@@ -1020,7 +1038,8 @@ export default function EligibilityPage() {
                           (e.currentTarget.style.color = "#111827")
                         }
                         onMouseLeave={(e) =>
-                          (e.currentTarget.style.color = "rgba(0,0,0,0.35)")
+                          (e.currentTarget.style.color =
+                            "rgba(0,0,0,0.35)")
                         }
                       >
                         <ChevronLeft size={13} /> Go back
@@ -1031,7 +1050,6 @@ export default function EligibilityPage() {
               )}
             </div>
 
-            {/* Footer note */}
             <p
               style={{
                 textAlign: "center",
