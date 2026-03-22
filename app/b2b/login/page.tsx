@@ -10,7 +10,7 @@ export default function B2BLogin() {
   const [password, setPassword] = useState("");
 
   function handleLogin() {
-    // hardcoded for demo — swap for real auth later
+    // just checking both fields are filled for the demo — swap this for real auth before launch
     if (email && password) {
       router.push("/b2b/dashboard");
     }
@@ -40,7 +40,7 @@ export default function B2BLogin() {
         fontFamily: "'DM Sans', system-ui, sans-serif",
       }}
     >
-      {/* Logo */}
+      {/* logo top-left */}
       <div style={{ padding: "20px 24px 0" }}>
         <Link
           href="/"
@@ -69,7 +69,7 @@ export default function B2BLogin() {
         </Link>
       </div>
 
-      {/* Form */}
+      {/* centered login form */}
       <div
         style={{
           flex: 1,
@@ -80,7 +80,7 @@ export default function B2BLogin() {
         }}
       >
         <div style={{ width: "100%", maxWidth: 360 }}>
-          {/* Header */}
+          {/* icon and heading */}
           <div style={{ textAlign: "center", marginBottom: 28 }}>
             <div
               style={{
@@ -113,7 +113,7 @@ export default function B2BLogin() {
             </p>
           </div>
 
-          {/* Card */}
+          {/* email + password card */}
           <div
             style={{
               background: "white",

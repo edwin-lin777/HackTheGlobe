@@ -22,9 +22,7 @@ import {
   AlertTriangle,
 } from "lucide-react";
 
-// ================================================================
-// TYPES
-// ================================================================
+// local types for this page
 type Status = "not_started" | "in_progress" | "submitted";
 
 type Program = {
@@ -60,9 +58,7 @@ type DashboardData = {
   alerts: { id: string; title: string; message: string }[];
 };
 
-// ================================================================
-// DUMMY DATA
-// ================================================================
+// fallback data used when the API call fails or hasn't resolved yet
 const DUMMY: DashboardData = {
   programs: [
     {
@@ -163,9 +159,7 @@ const DUMMY: DashboardData = {
   ],
 };
 
-// ================================================================
-// CONFIGS
-// ================================================================
+// color and style config per program type
 const TYPE_CONFIG: Record<
   string,
   { color: string; bg: string; border: string }
@@ -185,9 +179,7 @@ const STATUS_CONFIG: Record<
   submitted: { color: "#059669", bg: "#d1fae5", label: "Submitted" },
 };
 
-// ================================================================
-// APPLICATION GUIDE STEPS
-// ================================================================
+// ordered list of application steps shown in the guide
 const GUIDE_STEPS = [
   {
     order: 1,
@@ -282,9 +274,7 @@ const GUIDE_STEPS = [
   },
 ];
 
-// ================================================================
-// APPLICATION GUIDE COMPONENT
-// ================================================================
+// step-by-step application guide — only shows steps for programs the user qualifies for
 function ApplicationGuide({ programs }: { programs: Program[] }) {
   const [openStep, setOpenStep] = useState<number | null>(0);
 
@@ -295,7 +285,7 @@ function ApplicationGuide({ programs }: { programs: Program[] }) {
 
   return (
     <div style={{ marginTop: 28 }}>
-      {/* Header */}
+      {/* guide header with title and step count */}
       <div
         style={{
           display: "flex",
@@ -340,7 +330,7 @@ function ApplicationGuide({ programs }: { programs: Program[] }) {
         </div>
       </div>
 
-      {/* Order warning */}
+      {/* warning when recommended order isn't being followed */}
       <div
         style={{
           background: "#fffbeb",
@@ -364,7 +354,7 @@ function ApplicationGuide({ programs }: { programs: Program[] }) {
         </p>
       </div>
 
-      {/* Steps */}
+      {/* expandable step list */}
       <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
         {steps.map((step, i) => {
           const isOpen = openStep === i;
@@ -379,7 +369,7 @@ function ApplicationGuide({ programs }: { programs: Program[] }) {
                 transition: "border-color 0.2s",
               }}
             >
-              {/* Row */}
+              {/* clickable row that toggles the step detail */}
               <button
                 onClick={() => setOpenStep(isOpen ? null : i)}
                 style={{
@@ -395,7 +385,7 @@ function ApplicationGuide({ programs }: { programs: Program[] }) {
                   textAlign: "left",
                 }}
               >
-                {/* Number */}
+                {/* step number circle */}
                 <div
                   style={{
                     width: 26,
@@ -415,7 +405,7 @@ function ApplicationGuide({ programs }: { programs: Program[] }) {
                   {step.order}
                 </div>
 
-                {/* Label */}
+                {/* program name and short description */}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div
                     style={{
@@ -500,7 +490,7 @@ function ApplicationGuide({ programs }: { programs: Program[] }) {
                 )}
               </button>
 
-              {/* Expanded */}
+              {/* expanded detail panel with instructions and documents */}
               {isOpen && (
                 <div
                   style={{
@@ -516,7 +506,7 @@ function ApplicationGuide({ programs }: { programs: Program[] }) {
                       paddingTop: 12,
                     }}
                   >
-                    {/* Steps */}
+                    {/* application steps for this program */}
                     <div>
                       <p
                         style={{
@@ -546,7 +536,7 @@ function ApplicationGuide({ programs }: { programs: Program[] }) {
                         ))}
                       </ol>
                     </div>
-                    {/* Documents */}
+                    {/* documents needed for this step */}
                     <div>
                       <p
                         style={{
@@ -614,9 +604,7 @@ function ApplicationGuide({ programs }: { programs: Program[] }) {
   );
 }
 
-// ================================================================
-// SAVINGS VISUALIZATION
-// ================================================================
+// animated bar chart showing projected savings broken down by program
 function SavingsVisualization({
   programs,
   annualBill,
@@ -840,9 +828,7 @@ function SavingsVisualization({
   );
 }
 
-// ================================================================
-// SAVINGS MODAL
-// ================================================================
+// full-screen modal with detailed savings breakdown
 function SavingsModal({
   programs,
   billImpact,
@@ -1088,9 +1074,7 @@ function SavingsModal({
   );
 }
 
-// ================================================================
-// PROGRAM CARD
-// ================================================================
+// card for a single matched program — shows status, docs, and how to apply
 function ProgramCard({
   program,
   onStatusChange,
@@ -1394,9 +1378,7 @@ function ProgramCard({
   );
 }
 
-// ================================================================
-// DOCUMENT MASTER CHECKLIST
-// ================================================================
+// consolidated checklist of all documents needed across every matched program
 function DocumentMasterChecklist({ programs }: { programs: Program[] }) {
   const [checked, setChecked] = useState<Record<string, boolean>>({});
 
@@ -1715,9 +1697,7 @@ function DocumentMasterChecklist({ programs }: { programs: Program[] }) {
   );
 }
 
-// ================================================================
-// AGENCY CARD
-// ================================================================
+// card showing the nearest LEAP intake agency with contact info
 function AgencyCard({ agency }: { agency: DashboardData["agency"] }) {
   return (
     <motion.div
@@ -1859,9 +1839,7 @@ function AgencyCard({ agency }: { agency: DashboardData["agency"] }) {
   );
 }
 
-// ================================================================
-// MAIN DASHBOARD
-// ================================================================
+// main dashboard — fetches results on mount and renders the full UI
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData>(DUMMY);
   const [programs, setPrograms] = useState<Program[]>(DUMMY.programs);
@@ -1884,12 +1862,12 @@ export default function Dashboard() {
               statusMap[p.id] ? { ...p, status: statusMap[p.id] } : p,
             );
           } catch {
-            /* ignore */
+            // couldn't restore saved statuses, no big deal
           }
         }
         setPrograms(progs);
       } catch {
-        /* fallback uses DUMMY */
+        // API call failed, just keep showing the dummy data
       }
     }
     setLoaded(true);
@@ -1948,7 +1926,7 @@ export default function Dashboard() {
         }
       `}</style>
 
-      {/* NAV */}
+      {/* top navigation bar */}
       <nav
         style={{
           background: "white",
@@ -2008,7 +1986,7 @@ export default function Dashboard() {
         )}
       </nav>
 
-      {/* CONTENT */}
+      {/* main page content */}
       <div
         style={{
           maxWidth: "1120px",
@@ -2041,7 +2019,7 @@ export default function Dashboard() {
           </p>
         </motion.div>
 
-        {/* ALERTS */}
+        {/* time-sensitive alert banners */}
         {visibleAlerts.length > 0 && (
           <div
             style={{
@@ -2111,7 +2089,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {/* 60/40 LAYOUT */}
+        {/* 60/40 split: program cards on the left, savings + docs on the right */}
         <div
           className="results-layout"
           style={{
@@ -2121,7 +2099,7 @@ export default function Dashboard() {
             marginTop: "4px",
           }}
         >
-          {/* LEFT */}
+          {/* left column: matched program cards */}
           <div style={{ flex: 3, minWidth: 0 }}>
             <p
               style={{
@@ -2163,14 +2141,14 @@ export default function Dashboard() {
               </>
             )}
 
-            {/* DOCUMENT CHECKLIST */}
+            {/* master document checklist across all programs */}
             <DocumentMasterChecklist programs={programs} />
 
-            {/* APPLICATION GUIDE — all steps unlocked */}
+            {/* step-by-step application guide, all steps available */}
             <ApplicationGuide programs={programs} />
           </div>
 
-          {/* RIGHT */}
+          {/* right column: savings info and agency contact */}
           <div
             className="results-right"
             style={{
@@ -2181,7 +2159,7 @@ export default function Dashboard() {
               top: 72,
             }}
           >
-            {/* SAVINGS BANNER */}
+            {/* banner showing total estimated annual savings */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -2290,7 +2268,7 @@ export default function Dashboard() {
               </div>
             </motion.div>
 
-            {/* SAVINGS VISUALIZATION */}
+            {/* animated savings visualization */}
             <div
               style={{
                 background: "white",
@@ -2329,7 +2307,7 @@ export default function Dashboard() {
               />
             </div>
 
-            {/* SAVINGS BREAKDOWN */}
+            {/* per-program savings breakdown */}
             <div
               style={{
                 background: "white",

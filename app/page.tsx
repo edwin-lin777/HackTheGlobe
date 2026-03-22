@@ -229,7 +229,7 @@ export default function HomePage() {
         }}
       >
         <div style={{ width: "100%", maxWidth: "840px" }}>
-          {/* Two-column hero */}
+          {/* two-column hero: copy on the left, card preview on the right */}
           <div
             style={{
               display: "grid",
@@ -238,7 +238,7 @@ export default function HomePage() {
               marginBottom: "40px",
             }}
           >
-            {/* Left */}
+            {/* left: headline, subtitle, and CTA */}
             <div>
               <motion.h1
                 initial={{ opacity: 0, y: 12 }}
@@ -413,7 +413,7 @@ export default function HomePage() {
               ></motion.div>
             </div>
 
-            {/* Right — card preview */}
+            {/* right: card preview showing a sample result */}
             <motion.div
               initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
@@ -606,7 +606,7 @@ export default function HomePage() {
             </motion.div>
           </div>
 
-          {/* PROGRAMS MARQUEE */}
+          {/* scrolling marquee of program names */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

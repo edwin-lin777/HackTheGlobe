@@ -1,12 +1,8 @@
 import rates from "@/data/oeb_rates.json";
 import type { EligibleProgram } from "./eligibility";
 
-// ================================================================
-// POSTAL CODE → LDC MAPPING
-// First 3 characters of postal code (FSA) → LDC name
-// Covers major Ontario population centres
-// Add more as needed
-// ================================================================
+// maps the first 3 characters of a postal code (FSA) to a Local Distribution Company name
+// covers major Ontario population centres — add more entries as needed
 const FSA_TO_LDC: Record<string, string> = {
   // Toronto
   M4: "Toronto Hydro-Electric System Limited",
@@ -62,9 +58,7 @@ const FSA_TO_LDC: Record<string, string> = {
   L9: "Hydro One Networks Inc.",
 };
 
-// ================================================================
-// TYPES
-// ================================================================
+// types for this module
 type LDCRate = (typeof rates)[0];
 
 export type BillImpact = {
@@ -76,42 +70,38 @@ export type BillImpact = {
   programSavings: { programId: string; annualSaving: number }[];
 };
 
-// ================================================================
-// STEP 1 — Postal code → LDC rate object
-// ================================================================
+// looks up the rate object for a given postal code
 export function getLDCByPostalCode(postalCode: string): LDCRate | null {
-  // Normalize — remove spaces, uppercase
+  // strip spaces and uppercase before looking it up
   const clean = postalCode.replace(/\s/g, "").toUpperCase();
 
-  // Try 3-char FSA first (most specific)
+  // try the full 3-char FSA first since it's most specific
   const fsa3 = clean.substring(0, 3);
   if (FSA_TO_LDC[fsa3]) {
     const ldcName = FSA_TO_LDC[fsa3];
     return rates.find((r) => r.ldc === ldcName) ?? null;
   }
 
-  // Try 2-char prefix as fallback
+  // fall back to just the 2-char prefix
   const fsa2 = clean.substring(0, 2);
   if (FSA_TO_LDC[fsa2]) {
     const ldcName = FSA_TO_LDC[fsa2];
     return rates.find((r) => r.ldc === ldcName) ?? null;
   }
 
-  // Default to Hydro One if unknown — covers most rural Ontario
+  // if we still can't match it, default to Hydro One — covers most of rural Ontario
   return rates.find((r) => r.ldc === "Hydro One Networks Inc.") ?? null;
 }
 
-// ================================================================
-// STEP 2 — Calculate monthly bill from rate data + kWh usage
-// Formula: fixed charge + energy cost + distribution + network + connection, all × HST
-// ================================================================
+// calculates the monthly bill from OEB rate data and kWh usage
+// formula: fixed charge + tiered energy + distribution + network + connection, all × HST
 export function calculateMonthlyBill(
   rate: LDCRate,
   monthlyKwh: number,
 ): number {
   const fixedCharge = rate.serviceChargeCents / 100;
 
-  // Tiered energy cost — first 1000 kWh at tier1, rest at tier2
+  // tiered energy cost: first 1000 kWh at tier 1 rate, anything above at tier 2
   const tier1Kwh = Math.min(monthlyKwh, rate.tier1Threshold);
   const tier2Kwh = Math.max(0, monthlyKwh - rate.tier1Threshold);
   const energyCost =
@@ -126,14 +116,11 @@ export function calculateMonthlyBill(
     fixedCharge + energyCost + distributionCost + networkCost + connectionCost;
   const withHST = subtotal * (1 + rate.hst);
 
-  return Math.round(withHST * 100) / 100; // round to 2 decimal places
+  return Math.round(withHST * 100) / 100; // keep it to cents
 }
 
-// ================================================================
-// STEP 3 — Full bill impact calculation
-// Takes postal code + usage + matched programs
-// Returns full breakdown including savings per program
-// ================================================================
+// full bill impact calculation — takes postal code + usage + matched programs
+// and returns the breakdown including how much each program saves annually
 export function calculateBillImpact(
   postalCode: string,
   monthlyKwh: number,
@@ -141,7 +128,7 @@ export function calculateBillImpact(
 ): BillImpact {
   const rate = getLDCByPostalCode(postalCode);
 
-  // Fallback if LDC not found — use provincial average rates
+  // if we couldn't match the postal code, fall back to provincial average rates
   const effectiveRate = rate ?? {
     ldc: "Ontario Average",
     serviceChargeCents: 38,
@@ -159,7 +146,7 @@ export function calculateBillImpact(
   const monthlyBill = calculateMonthlyBill(effectiveRate, monthlyKwh);
   const annualBill = Math.round(monthlyBill * 12 * 100) / 100;
 
-  // Build per-program savings list
+  // pull the annual saving out of each matched program that has one
   const programSavings = eligiblePrograms
     .filter((p) => p.annualSaving !== null)
     .map((p) => ({

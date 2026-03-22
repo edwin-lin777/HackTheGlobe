@@ -6,9 +6,7 @@ import { CheckIcon, ArrowRightIcon, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { Zap } from "lucide-react";
 
-// ================================================================
-// TOAST
-// ================================================================
+// toast notification types and components
 type ToastType = {
   id: number;
   message: string;
@@ -114,9 +112,7 @@ function useToast() {
   return { toasts, toast, dismiss };
 }
 
-// ================================================================
-// CLOUD MASCOT
-// ================================================================
+// animated cloud mascot that tracks mouse movement and covers its eyes during password input
 function CloudMascot({ isTypingPassword }: { isTypingPassword: boolean }) {
   const [eyePos, setEyePos] = useState({ x: 0, y: 0 });
   const [blink, setBlink] = useState(false);
@@ -221,9 +217,7 @@ function CloudMascot({ isTypingPassword }: { isTypingPassword: boolean }) {
   );
 }
 
-// ================================================================
-// STEP DOTS
-// ================================================================
+// progress dots shown at the top of the form
 function StepDots({ steps, current }: { steps: string[]; current: number }) {
   return (
     <div
@@ -346,9 +340,7 @@ function StepDots({ steps, current }: { steps: string[]; current: number }) {
   );
 }
 
-// ================================================================
-// ELIGIBILITY QUESTIONS
-// ================================================================
+// the multi-step eligibility questionnaire
 const QUESTIONS = [
   {
     key: "householdSize",
@@ -397,9 +389,7 @@ const QUESTIONS = [
 type AnswerKey = (typeof QUESTIONS)[number]["key"];
 type Answers = Record<AnswerKey, string>;
 
-// ================================================================
-// MAIN PAGE
-// ================================================================
+// main eligibility page — handles the full flow from account creation to results
 export default function EligibilityPage() {
   const router = useRouter();
   const { toasts, toast, dismiss } = useToast();
@@ -429,7 +419,7 @@ export default function EligibilityPage() {
   const currentQ = QUESTIONS[qIndex];
   const progressPct = ((qIndex + 1) / QUESTIONS.length) * 100;
 
-  // ── Account submit ──
+  // handle account creation and move to the eligibility questions
   function handleAccountSubmit() {
     if (!account.firstName.trim())
       return toast("Please enter your first name.", "error");
@@ -450,7 +440,7 @@ export default function EligibilityPage() {
     setTimeout(() => setPhase("eligibility"), 350);
   }
 
-  // ── Eligibility advance ──
+  // advance through eligibility questions, or submit at the last one
   function handleNext() {
     const val = answers[currentQ.key as AnswerKey];
     if (!val.trim())

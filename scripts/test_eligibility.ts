@@ -1,6 +1,6 @@
 import { checkEligibility } from "../lib/eligibility";
 
-// Test profile 1 — should qualify for OESP, EAP, Enbridge
+// income-qualified Toronto household with Enbridge — should get OESP, EAP, Enbridge winterproofing
 const profile1 = {
   postalCode: "M5V 2T6",
   householdSize: 2,
@@ -13,7 +13,7 @@ const profile1 = {
   monthlyKwh: 700,
 };
 
-// Test profile 2 — should qualify for LEAP (has arrears, not OESP)
+// higher income with arrears — should get LEAP but not OESP
 const profile2 = {
   postalCode: "M5V 2T6",
   householdSize: 4,
@@ -26,7 +26,7 @@ const profile2 = {
   monthlyKwh: 700,
 };
 
-// Test profile 3 — Northern Ontario, should get NOEC
+// Northern Ontario resident — should get NOEC on top of OESP and EAP
 const profile3 = {
   postalCode: "P3A 1B2",
   householdSize: 1,

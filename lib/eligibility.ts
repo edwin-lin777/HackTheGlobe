@@ -1,8 +1,6 @@
 import programs from "@/data/programs.json";
 
-// ================================================================
-// INPUT — what the onboarding form collects from the user
-// ================================================================
+// everything the onboarding form collects from the user
 export type UserProfile = {
   postalCode: string;
   householdSize: number;
@@ -11,13 +9,11 @@ export type UserProfile = {
   isElectricHeat: boolean;
   isEnbridgeCustomer: boolean;
   isNorthernOntario: boolean;
-  isOWSP: boolean; // on Ontario Works or ODSP
+  isOWSP: boolean; // true if they're on Ontario Works or ODSP
   monthlyKwh: number;
 };
 
-// ================================================================
-// OUTPUT — one entry per matched program
-// ================================================================
+// one entry per matched program returned from checkEligibility
 export type EligibleProgram = {
   id: string;
   name: string;
@@ -32,35 +28,29 @@ export type EligibleProgram = {
   documents: string[];
 };
 
-// ================================================================
-// HELPER — find income threshold for a given household size
-// Returns null if household size not found (treat as ineligible)
-// ================================================================
+// finds the income threshold for a given household size
+// returns null if the household size isn't in the table, which we treat as ineligible
 function getIncomeThreshold(
   thresholds: { householdSize: number; maxIncome: number }[],
   householdSize: number
 ): number | null {
-  // If household is larger than the table, use the last entry
+  // if the household is bigger than anything in the table, just use the largest entry
   const sorted = [...thresholds].sort((a, b) => b.householdSize - a.householdSize);
   const match = sorted.find((t) => t.householdSize <= householdSize);
   return match ? match.maxIncome : null;
 }
 
-// ================================================================
-// HELPER — get monthly credit amount for OESP
-// ================================================================
+// looks up the monthly OESP credit for a given household size
 function getOESPCredit(
   benefits: { householdSize: number; maxIncome: number; monthlyCredit: number }[],
   householdSize: number
 ): number {
   const sorted = [...benefits].sort((a, b) => b.householdSize - a.householdSize);
   const match = sorted.find((b) => b.householdSize <= householdSize);
-  return match ? match.monthlyCredit : 35; // default to lowest tier
+  return match ? match.monthlyCredit : 35; // fall back to the lowest tier if nothing matches
 }
 
-// ================================================================
-// HELPER — build document list per program
-// ================================================================
+// returns the list of documents a person needs to gather for a given program
 function getDocuments(programId: string, profile: UserProfile): string[] {
   switch (programId) {
     case "oesp":
@@ -89,9 +79,7 @@ function getDocuments(programId: string, profile: UserProfile): string[] {
   }
 }
 
-// ================================================================
-// HELPER — get how-to-apply text per program
-// ================================================================
+// returns plain-language application instructions for each program
 function getHowToApply(programId: string): string {
   switch (programId) {
     case "oesp":
@@ -111,9 +99,7 @@ function getHowToApply(programId: string): string {
   }
 }
 
-// ================================================================
-// MAIN FUNCTION
-// ================================================================
+// runs through every program and returns the ones the user qualifies for
 export function checkEligibility(profile: UserProfile): EligibleProgram[] {
   const results: EligibleProgram[] = [];
   let oespEligible = false;
@@ -123,10 +109,7 @@ export function checkEligibility(profile: UserProfile): EligibleProgram[] {
     let annualSaving: number | null = null;
     let monthlyCredit: number | null = null;
 
-    // ----------------------------------------------------------
-    // OESP — income + household size check
-    // OW/ODSP recipients automatically qualify
-    // ----------------------------------------------------------
+    // OESP: income + household size check, OW/ODSP recipients qualify automatically
     if (program.id === "oesp") {
       if (profile.isOWSP) {
         eligible = true;
@@ -141,7 +124,7 @@ export function checkEligibility(profile: UserProfile): EligibleProgram[] {
         const benefitTable = program.benefits as { householdSize: number; maxIncome: number; monthlyCredit: number }[];
         monthlyCredit = getOESPCredit(benefitTable, profile.householdSize);
 
-        // Higher credit for electric heat
+        // electric heat households get a bump on top of the base credit
         if (profile.isElectricHeat) {
           monthlyCredit = Math.min(monthlyCredit + 20, 113);
         }
@@ -150,10 +133,7 @@ export function checkEligibility(profile: UserProfile): EligibleProgram[] {
       }
     }
 
-    // ----------------------------------------------------------
-    // LEAP — income check + must have arrears
-    // Cannot already be an OESP recipient
-    // ----------------------------------------------------------
+    // LEAP: income check + must have arrears, and can't already be getting OESP
     else if (program.id === "leap") {
       const thresholds = (program.eligibility as any).incomeThresholds;
       const maxIncome = getIncomeThreshold(thresholds, profile.householdSize);
@@ -168,17 +148,13 @@ export function checkEligibility(profile: UserProfile): EligibleProgram[] {
       }
     }
 
-    // ----------------------------------------------------------
-    // EAP — automatic if OESP eligible
-    // ----------------------------------------------------------
+    // EAP: if they qualify for OESP, they automatically get this too
     else if (program.id === "eap") {
       eligible = oespEligible;
-      // No dollar saving — benefit is free physical upgrades
+      // benefit is free physical upgrades, not a dollar credit
     }
 
-    // ----------------------------------------------------------
-    // Enbridge Winterproofing — must be Enbridge customer + income qualified
-    // ----------------------------------------------------------
+    // Enbridge Winterproofing: must be an Enbridge customer and income-qualified
     else if (program.id === "enbridge_winterproofing") {
       const thresholds = [
         { householdSize: 1, maxIncome: 28000 },
@@ -194,24 +170,18 @@ export function checkEligibility(profile: UserProfile): EligibleProgram[] {
         profile.annualIncome <= maxIncome;
     }
 
-    // ----------------------------------------------------------
-    // Northern Ontario Energy Credit — must live in Northern ON
-    // ----------------------------------------------------------
+    // Northern Ontario Energy Credit: only available to Northern ON residents
     else if (program.id === "noec") {
       eligible = profile.isNorthernOntario;
     }
 
-    // ----------------------------------------------------------
-    // Home Renovation Savings — everyone qualifies
-    // ----------------------------------------------------------
+    // Home Renovation Savings: open to everyone, no income check needed
     
     else if (program.id === "home_renovation_savings") {
       eligible = true;
     }
 
-    // ----------------------------------------------------------
-    // Add to results if eligible
-    // ----------------------------------------------------------
+    // add to results if they passed the check above
     if (eligible) {
       results.push({
         id: program.id,

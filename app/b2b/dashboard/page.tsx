@@ -38,9 +38,7 @@ import {
   Cell,
 } from "recharts";
 
-// ================================================================
-// DATA
-// ================================================================
+// dashboard data — swap these out for real API calls in production
 const MONTHLY_DATA = [
   { month: "Jul", checks: 820, enrolled: 310 },
   { month: "Aug", checks: 940, enrolled: 390 },
@@ -121,9 +119,7 @@ function fmtDollar(n: number) {
   return `$${n}`;
 }
 
-// ================================================================
-// SIDEBAR
-// ================================================================
+// sidebar navigation component
 function Sidebar() {
   const nav = [
     { icon: <LayoutDashboard size={15} />, label: "Dashboard", active: true },
@@ -143,7 +139,7 @@ function Sidebar() {
         top: 0,
       }}
     >
-      {/* Logo */}
+      {/* logo in sidebar header */}
       <div style={{ padding: "16px 20px", borderBottom: "1px solid #e5e7eb" }}>
         <Link
           href="/"
@@ -172,7 +168,7 @@ function Sidebar() {
         </Link>
       </div>
 
-      {/* Org */}
+      {/* org name and building icon */}
       <div style={{ padding: "12px 20px", borderBottom: "1px solid #f1f5f9" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <div
@@ -208,7 +204,7 @@ function Sidebar() {
         </div>
       </div>
 
-      {/* Nav */}
+      {/* nav links */}
       <nav style={{ padding: "8px 12px", flex: 1 }}>
         {nav.map((item, i) => (
           <div
@@ -240,7 +236,7 @@ function Sidebar() {
         ))}
       </nav>
 
-      {/* Bottom */}
+      {/* settings, help, and user info at the bottom */}
       <div style={{ padding: "12px", borderTop: "1px solid #f1f5f9" }}>
         {[
           { icon: <Settings size={14} />, label: "Settings" },
@@ -308,9 +304,7 @@ function Sidebar() {
   );
 }
 
-// ================================================================
-// STAT CARD — shadcn style
-// ================================================================
+// reusable stat card for the top metrics row
 function StatCard({
   label,
   value,
@@ -384,9 +378,7 @@ function StatCard({
   );
 }
 
-// ================================================================
-// CUSTOM TOOLTIP
-// ================================================================
+// tooltip shown when hovering the area chart
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
@@ -412,9 +404,7 @@ function CustomTooltip({ active, payload, label }: any) {
   );
 }
 
-// ================================================================
-// MAIN DASHBOARD
-// ================================================================
+// main dashboard page component
 export default function TCHCDashboard() {
   const [buildingShowAll, setBuildingShowAll] = useState(false);
   const displayed = buildingShowAll ? BUILDING_DATA : BUILDING_DATA.slice(0, 5);
@@ -435,7 +425,7 @@ export default function TCHCDashboard() {
 
       <Sidebar />
 
-      {/* MAIN */}
+      {/* main content area to the right of the sidebar */}
       <div
         style={{
           flex: 1,
@@ -444,7 +434,7 @@ export default function TCHCDashboard() {
           minWidth: 0,
         }}
       >
-        {/* TOP BAR */}
+        {/* sticky top bar with search and status */}
         <header
           style={{
             height: 52,
@@ -505,7 +495,7 @@ export default function TCHCDashboard() {
         </header>
 
         <main style={{ padding: "28px 28px 60px", flex: 1 }}>
-          {/* PAGE HEADER */}
+          {/* page title and export button */}
           <div
             style={{
               display: "flex",
@@ -552,7 +542,7 @@ export default function TCHCDashboard() {
             </button>
           </div>
 
-          {/* STAT CARDS */}
+          {/* four top-line metric cards */}
           <div
             style={{
               display: "grid",
@@ -595,7 +585,7 @@ export default function TCHCDashboard() {
             />
           </div>
 
-          {/* AREA CHART + ACTION ITEMS */}
+          {/* enrollment trend chart alongside action items */}
           <div
             style={{
               display: "grid",
@@ -604,7 +594,7 @@ export default function TCHCDashboard() {
               marginBottom: 24,
             }}
           >
-            {/* Area chart */}
+            {/* monthly enrollment area chart */}
             <div
               style={{
                 background: "white",
@@ -736,8 +726,8 @@ export default function TCHCDashboard() {
               </ResponsiveContainer>
             </div>
 
-            {/* Action items */}
-            {/* Action items */}
+            {/* action items that need coordinator attention */}
+            {/* action items that need coordinator attention */}
             <div
               style={{
                 background: "white",
@@ -746,7 +736,7 @@ export default function TCHCDashboard() {
                 overflow: "hidden",
               }}
             >
-              {/* Header */}
+              {/* action items card header */}
               <div
                 style={{
                   padding: "16px 20px",
@@ -791,7 +781,7 @@ export default function TCHCDashboard() {
                 </p>
               </div>
 
-              {/* Table header */}
+              {/* column headings for the actions list */}
               <div
                 style={{
                   display: "grid",
@@ -818,7 +808,7 @@ export default function TCHCDashboard() {
                 ))}
               </div>
 
-              {/* Rows */}
+              {/* action item rows */}
               {ACTIONS.map((a, i) => (
                 <div
                   key={i}
@@ -832,7 +822,7 @@ export default function TCHCDashboard() {
                     gap: 10,
                   }}
                 >
-                  {/* Priority dot */}
+                  {/* colored dot indicating priority level */}
                   <div
                     style={{
                       width: 7,
@@ -844,7 +834,7 @@ export default function TCHCDashboard() {
                     }}
                   />
 
-                  {/* Text */}
+                  {/* building name and action description */}
                   <div>
                     <p
                       style={{
@@ -868,7 +858,7 @@ export default function TCHCDashboard() {
                     </p>
                   </div>
 
-                  {/* Priority badge */}
+                  {/* high / med priority label */}
                   <div style={{ textAlign: "right" }}>
                     <span
                       style={{
@@ -885,7 +875,7 @@ export default function TCHCDashboard() {
                 </div>
               ))}
 
-              {/* Footer */}
+              {/* action items card footer with last-updated time */}
               <div
                 style={{
                   padding: "10px 20px",
@@ -918,7 +908,7 @@ export default function TCHCDashboard() {
             </div>
           </div>
 
-          {/* PROGRAM BAR CHART + BUILDING TABLE */}
+          {/* program enrollment chart and per-building breakdown table */}
           <div
             style={{
               display: "grid",
@@ -927,7 +917,7 @@ export default function TCHCDashboard() {
               marginBottom: 24,
             }}
           >
-            {/* Program bar chart */}
+            {/* enrollment counts broken down by program */}
             <div
               style={{
                 background: "white",
@@ -1030,7 +1020,7 @@ export default function TCHCDashboard() {
                 </span>
               </div>
 
-              {/* Table header */}
+              {/* column headings for the buildings table */}
               <div
                 style={{
                   display: "grid",
@@ -1178,7 +1168,7 @@ export default function TCHCDashboard() {
             </div>
           </div>
 
-          {/* CITY COUNCIL CALLOUT */}
+          {/* city council affordability mandate callout card */}
           <div
             style={{
               background: "white",

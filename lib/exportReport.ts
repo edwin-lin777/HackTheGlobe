@@ -1,4 +1,4 @@
-// lib/exportReport.ts
+// generates and opens a printable HTML report for the TCHC energy support data
 
 const BUILDING_DATA = [
   { name: "Regent Park", units: 2083, enrolled: 1320, rate: 72 },
@@ -47,7 +47,7 @@ export function handleExportReport() {
   const rateLabel = (r: number) =>
     r >= 60 ? "On track" : r >= 40 ? "Monitor" : "Action required";
 
-  // ── BAR CHART ──
+  // build the monthly enrollment bar chart as inline SVG
   const maxEnrolled = Math.max(...MONTHLY_DATA.map((d) => d.enrolled));
   const chartH = 80;
   const barW = 22;
@@ -64,7 +64,7 @@ export function handleExportReport() {
     `;
   }).join("");
 
-  // ── DONUT CHART ──
+  // build the program breakdown donut chart as inline SVG
   const total = PROGRAM_DATA.reduce((s, p) => s + p.enrolled, 0);
   const cx = 70;
   const cy = 70;
@@ -206,7 +206,7 @@ export function handleExportReport() {
 </head>
 <body>
 
-  <!-- HEADER -->
+  <!-- page header with title and generated date -->
   <div class="header">
     <div>
       <h1>Energy Support Outcomes — Q1 2026</h1>
@@ -215,13 +215,13 @@ export function handleExportReport() {
     <div class="header-right">Generated ${today}<br/>v1.2 — Draft, internal use only</div>
   </div>
 
-  <!-- CALLOUT -->
+  <!-- recommended language block for city council affordability reporting -->
   <div class="callout">
     <div class="callout-label">Recommended language — City Council affordability mandate reporting</div>
     <p>"In Q1 2026, TCHC connected <strong>6,103 households</strong> with provincial energy support programs, returning an estimated <strong>$3.3M annually</strong> to tenant households. Enrollment among eligible households increased from 28% to <strong>61%</strong> — a 33 percentage point improvement over the prior year."</p>
   </div>
 
-  <!-- METRICS -->
+  <!-- four key metrics across the top -->
   <div class="metrics">
     <div class="metric">
       <div class="metric-label">Eligibility checks</div>
@@ -248,7 +248,7 @@ export function handleExportReport() {
     </div>
   </div>
 
-  <!-- TWO TABLES -->
+  <!-- program breakdown and per-building enrollment rate tables -->
   <div class="two-col">
     <div>
       <div class="section-label">Program breakdown</div>
@@ -283,10 +283,10 @@ export function handleExportReport() {
     </div>
   </div>
 
-  <!-- CHARTS ROW -->
+  <!-- donut and bar chart sitting side by side -->
   <div class="chart-row">
 
-    <!-- DONUT -->
+    <!-- enrollment by program donut -->
     <div>
       <div class="section-label" style="margin-bottom:8pt">Enrollment by program</div>
       <div style="display:flex;align-items:center;gap:14pt;">
@@ -300,7 +300,7 @@ export function handleExportReport() {
       </div>
     </div>
 
-    <!-- BAR CHART -->
+    <!-- monthly enrollment trend bar chart -->
     <div>
       <div class="section-label" style="margin-bottom:8pt">Monthly enrollments</div>
       <div class="chart-legend">
@@ -314,7 +314,7 @@ export function handleExportReport() {
 
   </div>
 
-  <!-- FOOTER -->
+  <!-- footer with org name and report date -->
   <div class="footer">
     <span>Toronto Community Housing Corporation &nbsp;·&nbsp; Q1 2026 &nbsp;·&nbsp; Internal Use Only</span>
     <span>SubsidyAccess &nbsp;·&nbsp; subsidyaccess.ca</span>

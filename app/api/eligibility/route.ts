@@ -3,16 +3,12 @@ import { checkEligibility, type UserProfile } from "@/lib/eligibility";
 import { calculateBillImpact, getLDCByPostalCode } from "@/lib/billCalculator";
 import agencies from "@/data/leap_agencies.json";
 
-// ================================================================
-// POST /api/eligibility
-// Body: form payload
-// Returns: matched programs + bill impact + nearest LEAP agency + alerts
-// ================================================================
+// POST /api/eligibility — runs the full eligibility pipeline and returns everything the client needs
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    // Validate required fields from body
+    // bail early if anything critical is missing
     if (
       !body.postalCode ||
       !body.householdSize ||
@@ -27,7 +23,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Build a clean UserProfile with correct names / types
+    // coerce the raw body into a properly typed profile
     const profile: UserProfile = {
       postalCode: String(body.postalCode),
       householdSize: Number(body.householdSize),
@@ -43,22 +39,22 @@ export async function POST(req: NextRequest) {
           : 700, // default if not provided
     };
 
-    // Step 1 — run eligibility check
+    // check which programs this person qualifies for
     const programs = checkEligibility(profile);
 
-    // Step 2 — calculate bill impact
+    // estimate their current bill and total savings across matched programs
     const billImpact = calculateBillImpact(
       profile.postalCode,
       profile.monthlyKwh,
       programs,
     );
 
-    // Step 3 — find nearest LEAP agency
+    // find the LEAP agency that serves their local utility
     const ldcName = getLDCByPostalCode(profile.postalCode)?.ldc ?? "";
     const agency =
       agencies.find((a) => a.servicesLDCs.includes(ldcName)) ?? agencies[0];
 
-    // Step 4 — build alerts
+    // flag anything time-sensitive they should know about
     const alerts: { id: string; title: string; message: string }[] = [];
 
     if (programs.some((p) => p.id === "oesp")) {
@@ -84,7 +80,7 @@ export async function POST(req: NextRequest) {
       billImpact,
       agency,
       alerts,
-      // optional: echo profile back if you want it on the client
+      // echoing profile back so the client can use it for prefilling etc.
       profile,
     });
   } catch (err) {
