@@ -2,7 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Zap, ArrowRight, ShieldCheck, Home, Wallet } from "lucide-react";
+import {
+  Zap,
+  ArrowRight,
+  ShieldCheck,
+  Home,
+  Wallet,
+  Building,
+} from "lucide-react";
 
 const PROGRAMS = [
   {
@@ -207,7 +214,7 @@ export default function HomePage() {
           <span
             style={{
               fontSize: "14px",
-              fontWeight: "800",
+              fontWeight: "700",
               color: "#111827",
               letterSpacing: "-0.02em",
             }}
@@ -286,20 +293,20 @@ export default function HomePage() {
               >
                 <button
                   type="button"
+                  className="border border-[#e5e7eb] "
                   onClick={() => router.push("/eligibility")}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
                     gap: "6px",
                     padding: "11px 18px",
-                    borderRadius: "999px",
-                    border: "none",
-                    background: "linear-gradient(135deg, #2563eb, #1e40af)",
-                    color: "white",
+                    borderRadius: "10px",
+                    border: "border-black",
+                    background: "white",
+                    color: "black",
                     fontSize: "13px",
                     fontWeight: 600,
                     cursor: "pointer",
-                    boxShadow: "0 12px 24px rgba(37,99,235,0.25)",
                   }}
                 >
                   Start eligibility check <ArrowRight size={14} />
@@ -314,8 +321,91 @@ export default function HomePage() {
                   }}
                 >
                   <ShieldCheck size={14} color="#16a34a" />
-                  No account, no credit check, no cost.
+                  Free, no credit check, no cost.
                 </span>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.22 }}
+                style={{ display: "flex", gap: 8, marginBottom: 18 }}
+              >
+                <button
+                  onClick={() => router.push("/eligibility")}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "8px 14px",
+                    borderRadius: 8,
+                    border: "1px solid #e5e7eb",
+                    background: "white",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "#374151",
+                    cursor: "pointer",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 18,
+                      height: 18,
+                      borderRadius: 4,
+                      background: "#eff6ff",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <img
+                      src="/home.png"
+                      width={16}
+                      height={16}
+                      alt=""
+                      style={{ objectFit: "contain" }}
+                    />
+                  </div>
+                  I'm a resident
+                </button>
+
+                <button
+                  onClick={() => router.push("/b2b/login")}
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "8px 14px",
+                    borderRadius: 8,
+                    border: "1px solid #e5e7eb",
+                    background: "white",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    color: "#374151",
+                    cursor: "pointer",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 18,
+                      height: 18,
+                      borderRadius: 4,
+                      background: "#f0fdf4",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <img
+                      src="/building.png"
+                      width={16}
+                      height={16}
+                      alt=""
+                      style={{ objectFit: "contain" }}
+                    />
+                  </div>
+                  I'm a housing provider
+                </button>
               </motion.div>
 
               <motion.div
@@ -329,36 +419,7 @@ export default function HomePage() {
                   fontSize: "11px",
                   color: "#6b7280",
                 }}
-              >
-                <div
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    padding: "6px 10px",
-                    borderRadius: "999px",
-                    background: "white",
-                    border: "1px solid #e5e7eb",
-                  }}
-                >
-                  <Home size={12} color="#1d4ed8" /> OESP, LEAP, EAP, Enbridge &
-                  more
-                </div>
-                <div
-                  style={{
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "6px",
-                    padding: "6px 10px",
-                    borderRadius: "999px",
-                    background: "white",
-                    border: "1px solid #e5e7eb",
-                  }}
-                >
-                  <Wallet size={12} color="#059669" /> See estimated yearly
-                  savings
-                </div>
-              </motion.div>
+              ></motion.div>
             </div>
 
             {/* Right — card preview */}
