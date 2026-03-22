@@ -110,8 +110,7 @@ function ProgramMarquee() {
               display: "flex",
               alignItems: "center",
               gap: 9,
-              background: "white",
-              border: `1px solid ${p.border}`,
+
               borderRadius: 12,
               padding: "9px 14px",
               minWidth: 170,
@@ -123,7 +122,7 @@ function ProgramMarquee() {
                 width: 30,
                 height: 30,
                 borderRadius: 7,
-                background: p.bg,
+
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -156,7 +155,7 @@ function ProgramMarquee() {
                 style={{
                   margin: 0,
                   fontSize: 11,
-                  color: p.color,
+                  color: "#6b7280",
                   fontWeight: 600,
                 }}
               >
