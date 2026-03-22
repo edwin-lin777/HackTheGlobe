@@ -49,21 +49,21 @@ function ToastContainer({
               t.type === "success"
                 ? "#f0fdf4"
                 : t.type === "error"
-                ? "#fef2f2"
-                : "#eff6ff",
+                  ? "#fef2f2"
+                  : "#eff6ff",
             border: `1px solid ${
               t.type === "success"
                 ? "#a7f3d0"
                 : t.type === "error"
-                ? "#fecaca"
-                : "#bfdbfe"
+                  ? "#fecaca"
+                  : "#bfdbfe"
             }`,
             color:
               t.type === "success"
                 ? "#065f46"
                 : t.type === "error"
-                ? "#ff4d4d"
-                : "#1e40af",
+                  ? "#ff4d4d"
+                  : "#1e40af",
             borderRadius: 12,
             padding: "11px 16px",
             fontSize: 13,
@@ -260,14 +260,14 @@ function StepDots({ steps, current }: { steps: string[]; current: number }) {
                   i < current
                     ? "rgba(0,0,0,0.08)"
                     : i === current
-                    ? "#111827"
-                    : "rgba(0,0,0,0.04)",
+                      ? "#111827"
+                      : "rgba(0,0,0,0.04)",
                 color:
                   i < current
                     ? "rgba(0,0,0,0.5)"
                     : i === current
-                    ? "white"
-                    : "rgba(0,0,0,0.25)",
+                      ? "white"
+                      : "rgba(0,0,0,0.25)",
                 boxShadow:
                   i === current ? "0 0 0 4px rgba(17,24,39,0.08)" : "none",
                 transition: "all 0.5s ease",
@@ -491,18 +491,21 @@ export default function EligibilityPage() {
       setSubmitting(false);
     }
   }
-
-  sessionStorage.setItem(
-    "userInfo",
-    JSON.stringify({
-      firstName: account.firstName,
-      lastName: account.lastName,
-      email: account.email,
-      postalCode: account.postalCode,
-      householdSize: parseInt(answers.householdSize) || 1,
-      annualIncome: parseInt(answers.annualIncome) || 0,
-    }),
-  );
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem(
+        "userInfo",
+        JSON.stringify({
+          firstName: account.firstName,
+          lastName: account.lastName,
+          email: account.email,
+          postalCode: account.postalCode,
+          householdSize: parseInt(answers.householdSize) || 1,
+          annualIncome: parseInt(answers.annualIncome) || 0,
+        }),
+      );
+    }
+  }, [account, answers]);
 
   const inputStyle: React.CSSProperties = {
     width: "100%",
@@ -744,9 +747,7 @@ export default function EligibilityPage() {
 
                           if (formatted.length > 3) {
                             formatted =
-                              formatted.slice(0, 3) +
-                              " " +
-                              formatted.slice(3);
+                              formatted.slice(0, 3) + " " + formatted.slice(3);
                           }
 
                           setAccount((a) => ({
@@ -997,19 +998,17 @@ export default function EligibilityPage() {
                         transition: "opacity 0.2s",
                       }}
                       onMouseEnter={(e) =>
-                        !submitting &&
-                        (e.currentTarget.style.opacity = "0.85")
+                        !submitting && (e.currentTarget.style.opacity = "0.85")
                       }
                       onMouseLeave={(e) =>
-                        !submitting &&
-                        (e.currentTarget.style.opacity = "1")
+                        !submitting && (e.currentTarget.style.opacity = "1")
                       }
                     >
                       {submitting
                         ? "Checking…"
                         : qIndex < QUESTIONS.length - 1
-                        ? "Continue"
-                        : "See my results"}
+                          ? "Continue"
+                          : "See my results"}
                       {!submitting && (
                         <ArrowRightIcon size={14} strokeWidth={2} />
                       )}
@@ -1038,8 +1037,7 @@ export default function EligibilityPage() {
                           (e.currentTarget.style.color = "#111827")
                         }
                         onMouseLeave={(e) =>
-                          (e.currentTarget.style.color =
-                            "rgba(0,0,0,0.35)")
+                          (e.currentTarget.style.color = "rgba(0,0,0,0.35)")
                         }
                       >
                         <ChevronLeft size={13} /> Go back
