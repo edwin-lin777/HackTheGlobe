@@ -198,19 +198,11 @@ export default function HomePage() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div
-            style={{
-              width: "26px",
-              height: "26px",
-              borderRadius: "6px",
-              background: "#1d4ed8",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Zap size={13} color="white" fill="white" />
-          </div>
+          <img
+            src="/logor.png"
+            alt="Navi$"
+            style={{ height: 32, width: "auto" }}
+          />
           <span
             style={{
               fontSize: "14px",

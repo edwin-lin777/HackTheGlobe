@@ -198,10 +198,7 @@ function SavingsVisualization({
 
   const cashPrograms = programs.filter((p) => p.annualSaving !== null);
   const freePrograms = programs.filter((p) => p.annualSaving === null);
-  const totalCash = cashPrograms.reduce(
-    (s, p) => s + (p.annualSaving ?? 0),
-    0,
-  );
+  const totalCash = cashPrograms.reduce((s, p) => s + (p.annualSaving ?? 0), 0);
   const fillRatio = Math.min(annualBill > 0 ? totalCash / annualBill : 0, 1);
 
   const makeDots = (count: number, r: number, cx: number, cy: number) =>
@@ -1265,8 +1262,7 @@ function DocumentMasterChecklist({ programs }: { programs: Program[] }) {
                     }}
                   >
                     {progs.map((p) => {
-                      const tt =
-                        TYPE_CONFIG[p.type] || TYPE_CONFIG.ongoing;
+                      const tt = TYPE_CONFIG[p.type] || TYPE_CONFIG.ongoing;
                       return (
                         <span
                           key={p.id}
@@ -1392,7 +1388,8 @@ function AgencyCard({ agency }: { agency: DashboardData["agency"] }) {
                 color: "#374151",
               }}
             >
-              <Phone size={11} color="#d97706" /> <strong>{agency.phone}</strong>
+              <Phone size={11} color="#d97706" />{" "}
+              <strong>{agency.phone}</strong>
             </div>
             <div
               style={{
@@ -1504,8 +1501,9 @@ export default function Dashboard() {
 
   const hasLEAP = programs.some((p) => p.id === "leap");
   const visibleAlerts = data.alerts.filter((a) => !dismissed.includes(a.id));
-  const submittedCount = programs.filter((p) => p.status === "submitted")
-    .length;
+  const submittedCount = programs.filter(
+    (p) => p.status === "submitted",
+  ).length;
   const cashPrograms = programs.filter((p) => p.annualSaving !== null);
 
   function handleStatus(id: string, status: Status) {
@@ -1586,19 +1584,11 @@ export default function Dashboard() {
             textDecoration: "none",
           }}
         >
-          <div
-            style={{
-              width: "27px",
-              height: "27px",
-              borderRadius: "7px",
-              background: "#1d4ed8",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Zap size={13} color="white" fill="white" />
-          </div>
+          <img
+            src="/logor.png"
+            alt="Navi$"
+            style={{ height: 32, width: "auto" }}
+          />
           <span
             style={{
               fontSize: "14px",
@@ -1900,9 +1890,7 @@ export default function Dashboard() {
                   >
                     {data.billImpact.savingPercentage}%
                   </p>
-                  <p
-                    style={{ margin: 0, fontSize: "10px", opacity: 0.6 }}
-                  >
+                  <p style={{ margin: 0, fontSize: "10px", opacity: 0.6 }}>
                     of bill
                   </p>
                 </div>
@@ -1943,7 +1931,8 @@ export default function Dashboard() {
                     color: "#6b7280",
                   }}
                 >
-                  vs. your ${data.billImpact.annualBill.toLocaleString()}/year bill
+                  vs. your ${data.billImpact.annualBill.toLocaleString()}/year
+                  bill
                 </span>
               </div>
               <SavingsVisualization
@@ -1975,9 +1964,7 @@ export default function Dashboard() {
                 Savings by program
               </p>
               {cashPrograms.length === 0 && (
-                <p
-                  style={{ margin: 0, fontSize: "11px", color: "#6b7280" }}
-                >
+                <p style={{ margin: 0, fontSize: "11px", color: "#6b7280" }}>
                   Your programs mainly reduce usage over time.
                 </p>
               )}
@@ -1991,9 +1978,7 @@ export default function Dashboard() {
                   }}
                 >
                   <span>{p.shortName}</span>
-                  <span>
-                    ${(p.annualSaving ?? 0).toLocaleString()}/year
-                  </span>
+                  <span>${(p.annualSaving ?? 0).toLocaleString()}/year</span>
                 </div>
               ))}
             </div>

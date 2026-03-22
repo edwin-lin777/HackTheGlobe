@@ -51,19 +51,11 @@ export default function B2BLogin() {
             textDecoration: "none",
           }}
         >
-          <div
-            style={{
-              width: 26,
-              height: 26,
-              borderRadius: 6,
-              background: "#1d4ed8",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Zap size={13} color="white" fill="white" />
-          </div>
+          <img
+            src="/logor.png"
+            alt="Navi$"
+            style={{ height: 32, width: "auto" }}
+          />
           <span
             style={{
               fontSize: 14,
