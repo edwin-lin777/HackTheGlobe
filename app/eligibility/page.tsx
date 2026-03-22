@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { CheckIcon, ArrowRightIcon, ChevronLeft } from "lucide-react";
-
+import Link from "next/link";
+import { Zap } from "lucide-react";
 // ================================================================
 // TOAST
 // ================================================================
@@ -39,7 +40,6 @@ function ToastContainer({
         <div
           key={t.id}
           style={{
-            
             pointerEvents: "all",
             display: "flex",
             alignItems: "center",
@@ -117,8 +117,8 @@ function CloudMascot({ isTypingPassword }: { isTypingPassword: boolean }) {
   useEffect(() => {
     const handle = (e: MouseEvent) => {
       setEyePos({
-        x: (e.clientX / window.innerWidth - 0.5) * 30,
-        y: (e.clientY / window.innerHeight - 0.5) * 15,
+        x: (e.clientX / window.innerWidth - 0.5) * 6,
+        y: (e.clientY / window.innerHeight - 0.5) * 3,
       });
     };
     window.addEventListener("mousemove", handle);
@@ -133,27 +133,13 @@ function CloudMascot({ isTypingPassword }: { isTypingPassword: boolean }) {
     return () => clearInterval(t);
   }, []);
 
-  const h = isTypingPassword ? 3 : blink ? 5 : 34;
+  const eyeRy = isTypingPassword ? 1 : blink ? 2 : 11; // taller = more oval
 
   return (
     <div
-      style={{
-        position: "relative",
-        width: 150,
-        height: 84,
-        margin: "0 auto 4px",
-        flexShrink: 0,
-      }}
+      style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}
     >
-      <svg
-        viewBox="0 0 150 84"
-        style={{
-          width: "100%",
-          height: "100%",
-          position: "absolute",
-          inset: 0,
-        }}
-      >
+      <svg viewBox="0 0 150 84" width="150" height="84">
         <defs>
           <filter id="cs">
             <feDropShadow
@@ -165,6 +151,8 @@ function CloudMascot({ isTypingPassword }: { isTypingPassword: boolean }) {
             />
           </filter>
         </defs>
+
+        {/* Cloud body */}
         <ellipse
           cx="75"
           cy="65"
@@ -176,6 +164,48 @@ function CloudMascot({ isTypingPassword }: { isTypingPassword: boolean }) {
         <circle cx="44" cy="50" r="20" fill="#f1f5f9" />
         <circle cx="75" cy="42" r="26" fill="#f1f5f9" />
         <circle cx="106" cy="50" r="18" fill="#f1f5f9" />
+
+        {/* Left eye — rx wider than ry for oval */}
+        <ellipse
+          cx="62"
+          cy="48"
+          rx="9"
+          ry={eyeRy}
+          fill="white"
+          stroke="#e2e8f0"
+          strokeWidth="1.5"
+          style={{ transition: "ry 0.15s ease" }}
+        />
+        {!isTypingPassword && !blink && (
+          <circle
+            cx={62 + eyePos.x}
+            cy={48 + eyePos.y}
+            r="3.5"
+            fill="#1e293b"
+          />
+        )}
+
+        {/* Right eye */}
+        <ellipse
+          cx="90"
+          cy="48"
+          rx="9"
+          ry={eyeRy}
+          fill="white"
+          stroke="#e2e8f0"
+          strokeWidth="1.5"
+          style={{ transition: "ry 0.15s ease" }}
+        />
+        {!isTypingPassword && !blink && (
+          <circle
+            cx={90 + eyePos.x}
+            cy={48 + eyePos.y}
+            r="3.5"
+            fill="#1e293b"
+          />
+        )}
+
+        {/* Smile + cheeks */}
         <path
           d="M 60 68 Q 75 76 90 68"
           stroke="#94a3b8"
@@ -183,48 +213,10 @@ function CloudMascot({ isTypingPassword }: { isTypingPassword: boolean }) {
           fill="none"
           strokeLinecap="round"
         />
-        <ellipse cx="54" cy="68" rx="6" ry="3.5" fill="#fda4af" opacity="0.5" />
-        <ellipse cx="96" cy="68" rx="6" ry="3.5" fill="#fda4af" opacity="0.5" />
       </svg>
-      {/* Eyes */}
-      {[58, 90].map((left, i) => (
-        <div
-          key={i}
-          style={{
-            position: "absolute",
-            top: 34,
-            left,
-            width: 22,
-            height: h,
-            borderRadius: isTypingPassword || blink ? "2px" : "50% / 60%",
-            background: isTypingPassword ? "#1e293b" : "white",
-            border: isTypingPassword ? "none" : "1.5px solid #e2e8f0",
-            overflow: "hidden",
-            display: "flex",
-            alignItems: "flex-end",
-            justifyContent: "center",
-            transition: "all 0.15s ease",
-          }}
-        >
-          {!isTypingPassword && !blink && (
-            <div
-              style={{
-                width: 11,
-                height: 11,
-                borderRadius: "50%",
-                background: "#1e293b",
-                marginBottom: 2,
-                transform: `translate(${eyePos.x * 0.28}px, 0)`,
-                transition: "transform 0.1s ease",
-              }}
-            />
-          )}
-        </div>
-      ))}
     </div>
   );
 }
-
 // ================================================================
 // STEP DOTS  (shadcn-style from reference)
 // ================================================================
@@ -495,6 +487,18 @@ export default function EligibilityPage() {
     }
   }
 
+  sessionStorage.setItem(
+    "userInfo",
+    JSON.stringify({
+      firstName: account.firstName,
+      lastName: account.lastName,
+      email: account.email,
+      postalCode: account.postalCode,
+      householdSize: parseInt(answers.householdSize) || 1,
+      annualIncome: parseInt(answers.annualIncome) || 0,
+    }),
+  );
+
   // ── Shared input style ──
   const inputStyle: React.CSSProperties = {
     width: "100%",
@@ -519,9 +523,9 @@ export default function EligibilityPage() {
         background:
           "linear-gradient(135deg, #f0f9ff 0%, #fafafa 55%, #fdf4ff 100%)",
         display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "24px 16px",
+
+        flexDirection: "column",
+
         fontFamily: "'DM Sans', 'Segoe UI', system-ui, sans-serif",
       }}
     >
@@ -531,69 +535,152 @@ export default function EligibilityPage() {
         input:focus { border-color: rgba(0,0,0,0.3) !important; box-shadow: 0 0 0 3px rgba(17,24,39,0.06) !important; }
         input::placeholder { color: #9ca3af; }
       `}</style>
-
-      <div style={{ width: "100%", maxWidth: 380 }}>
-        {/* Step dots */}
-        <StepDots
-          steps={["Your info", "Eligibility"]}
-          current={phase === "account" ? 0 : 1}
-        />
-
-        {/* Card */}
-        <div
+      <div style={{ padding: "20px 24px 0", flexShrink: 0 }}>
+        <Link
+          href="/"
           style={{
-            background: "rgba(255,255,255,0.55)",
-            backdropFilter: "blur(16px)",
-            WebkitBackdropFilter: "blur(16px)",
-            borderRadius: 20,
-            border: "1px solid rgba(255,255,255,0.7)",
-            boxShadow:
-              "0 20px 60px rgba(15,23,42,0.08), 0 1px 0 rgba(255,255,255,0.8) inset",
-            padding: "28px 28px 24px",
-            overflow: "hidden",
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            textDecoration: "none",
           }}
         >
-          {/* ═══ PHASE 1: ACCOUNT ═══ */}
-          {phase === "account" && (
-            <div style={{ animation: "fadeUp 0.4s ease" }}>
-              <CloudMascot isTypingPassword={isTypingPassword} />
+          <div
+            style={{
+              width: 26,
+              height: 26,
+              borderRadius: 6,
+              background: "#1d4ed8",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Zap size={13} color="white" fill="white" />
+          </div>
+          <span
+            style={{
+              fontSize: 14,
+              fontWeight: 800,
+              color: "#111827",
+              letterSpacing: "-0.02em",
+            }}
+          >
+            SubsidyAccess
+          </span>
+        </Link>
+      </div>
 
-              <div style={{ textAlign: "center", marginBottom: 22 }}>
-                <h2
-                  style={{
-                    fontSize: 19,
-                    fontWeight: 800,
-                    color: "#111827",
-                    margin: "0 0 4px",
-                    letterSpacing: "-0.03em",
-                  }}
-                >
-                  Create your account
-                </h2>
-                <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
-                  We'll save your results for you
-                </p>
-              </div>
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          padding: "24px 16px",
+        }}
+      >
+        <div style={{ width: "100%", maxWidth: 380 }}>
+          <div style={{ width: "100%", maxWidth: 380 }}>
+            {/* Step dots */}
+            <StepDots
+              steps={["Your info", "Eligibility"]}
+              current={phase === "account" ? 0 : 1}
+            />
 
-              <div
-                style={{ display: "flex", flexDirection: "column", gap: 11 }}
-              >
-                {/* Name row */}
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "1fr 1fr",
-                    gap: 10,
-                  }}
-                >
-                  {(
-                    [
-                      ["firstName", "First name", "Jane"],
-                      ["lastName", "Last name", "Doe"],
-                    ] as const
-                  ).map(([key, label, ph]) => (
+            {/* Card */}
+            <div
+              style={{
+                background: "rgba(255,255,255,0.55)",
+                backdropFilter: "blur(16px)",
+                WebkitBackdropFilter: "blur(16px)",
+                borderRadius: 20,
+                border: "1px solid rgba(255,255,255,0.7)",
+                boxShadow:
+                  "0 20px 60px rgba(15,23,42,0.08), 0 1px 0 rgba(255,255,255,0.8) inset",
+                padding: "28px 28px 24px",
+                overflow: "hidden",
+              }}
+            >
+              {/* ═══ PHASE 1: ACCOUNT ═══ */}
+              {phase === "account" && (
+                <div style={{ animation: "fadeUp 0.4s ease" }}>
+                  <CloudMascot isTypingPassword={isTypingPassword} />
+
+                  <div style={{ textAlign: "center", marginBottom: 22 }}>
+                    <h2
+                      style={{
+                        fontSize: 19,
+                        fontWeight: 800,
+                        color: "#111827",
+                        margin: "0 0 4px",
+                        letterSpacing: "-0.03em",
+                      }}
+                    >
+                      Create your account
+                    </h2>
+                    <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
+                      We'll save your results for you
+                    </p>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 11,
+                    }}
+                  >
+                    {/* Name row */}
                     <div
-                      key={key}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: 10,
+                      }}
+                    >
+                      {(
+                        [
+                          ["firstName", "First name", "Jane"],
+                          ["lastName", "Last name", "Doe"],
+                        ] as const
+                      ).map(([key, label, ph]) => (
+                        <div
+                          key={key}
+                          style={{
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 5,
+                          }}
+                        >
+                          <label
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 700,
+                              color: "#374151",
+                              letterSpacing: "0.02em",
+                            }}
+                          >
+                            {label}
+                          </label>
+                          <input
+                            style={inputStyle}
+                            placeholder={ph}
+                            value={account[key]}
+                            onChange={(e) =>
+                              setAccount((a) => ({
+                                ...a,
+                                [key]: e.target.value,
+                              }))
+                            }
+                            autoFocus={key === "firstName"}
+                          />
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Email */}
+                    <div
                       style={{
                         display: "flex",
                         flexDirection: "column",
@@ -608,363 +695,359 @@ export default function EligibilityPage() {
                           letterSpacing: "0.02em",
                         }}
                       >
-                        {label}
+                        Email
                       </label>
                       <input
                         style={inputStyle}
-                        placeholder={ph}
-                        value={account[key]}
+                        type="email"
+                        placeholder="jane@example.com"
+                        value={account.email}
                         onChange={(e) =>
-                          setAccount((a) => ({ ...a, [key]: e.target.value }))
+                          setAccount((a) => ({ ...a, email: e.target.value }))
                         }
-                        autoFocus={key === "firstName"}
                       />
                     </div>
-                  ))}
+
+                    {/* Postal */}
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 5,
+                      }}
+                    >
+                      <label
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: "#374151",
+                          letterSpacing: "0.02em",
+                        }}
+                      >
+                        Postal code
+                      </label>
+                      <input
+                        style={inputStyle}
+                        placeholder="M5V 2T6"
+                        value={account.postalCode}
+                        onChange={(e) =>
+                          setAccount((a) => ({
+                            ...a,
+                            postalCode: e.target.value.toUpperCase(),
+                          }))
+                        }
+                      />
+                    </div>
+
+                    {/* Password */}
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 5,
+                      }}
+                    >
+                      <label
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: "#374151",
+                          letterSpacing: "0.02em",
+                        }}
+                      >
+                        Password
+                      </label>
+                      <input
+                        style={inputStyle}
+                        type="password"
+                        placeholder="Min. 6 characters"
+                        value={account.password}
+                        onChange={(e) =>
+                          setAccount((a) => ({
+                            ...a,
+                            password: e.target.value,
+                          }))
+                        }
+                        onFocus={() => setIsTypingPassword(true)}
+                        onBlur={() => setIsTypingPassword(false)}
+                        onKeyDown={(e) =>
+                          e.key === "Enter" && handleAccountSubmit()
+                        }
+                      />
+                    </div>
+
+                    <button
+                      onClick={handleAccountSubmit}
+                      style={{
+                        marginTop: 4,
+                        width: "100%",
+                        height: 48,
+                        background: "#111827",
+                        color: "white",
+                        border: "none",
+                        borderRadius: 10,
+                        fontSize: 14,
+                        fontWeight: 700,
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 6,
+                        fontFamily: "inherit",
+                        boxShadow: "0 8px 24px rgba(17,24,39,0.2)",
+                        transition: "opacity 0.2s",
+                      }}
+                      onMouseEnter={(e) =>
+                        (e.currentTarget.style.opacity = "0.88")
+                      }
+                      onMouseLeave={(e) =>
+                        (e.currentTarget.style.opacity = "1")
+                      }
+                    >
+                      Continue{" "}
+                      <ArrowRightIcon
+                        size={14}
+                        strokeWidth={2}
+                        style={{ transition: "transform 0.2s" }}
+                      />
+                    </button>
+                  </div>
                 </div>
+              )}
 
-                {/* Email */}
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
-                >
-                  <label
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: "#374151",
-                      letterSpacing: "0.02em",
-                    }}
-                  >
-                    Email
-                  </label>
-                  <input
-                    style={inputStyle}
-                    type="email"
-                    placeholder="jane@example.com"
-                    value={account.email}
-                    onChange={(e) =>
-                      setAccount((a) => ({ ...a, email: e.target.value }))
-                    }
-                  />
-                </div>
-
-                {/* Postal */}
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
-                >
-                  <label
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: "#374151",
-                      letterSpacing: "0.02em",
-                    }}
-                  >
-                    Postal code
-                  </label>
-                  <input
-                    style={inputStyle}
-                    placeholder="M5V 2T6"
-                    value={account.postalCode}
-                    onChange={(e) =>
-                      setAccount((a) => ({
-                        ...a,
-                        postalCode: e.target.value.toUpperCase(),
-                      }))
-                    }
-                  />
-                </div>
-
-                {/* Password */}
-                <div
-                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
-                >
-                  <label
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 700,
-                      color: "#374151",
-                      letterSpacing: "0.02em",
-                    }}
-                  >
-                    Password
-                  </label>
-                  <input
-                    style={inputStyle}
-                    type="password"
-                    placeholder="Min. 6 characters"
-                    value={account.password}
-                    onChange={(e) =>
-                      setAccount((a) => ({ ...a, password: e.target.value }))
-                    }
-                    onFocus={() => setIsTypingPassword(true)}
-                    onBlur={() => setIsTypingPassword(false)}
-                    onKeyDown={(e) =>
-                      e.key === "Enter" && handleAccountSubmit()
-                    }
-                  />
-                </div>
-
-                <button
-                  onClick={handleAccountSubmit}
-                  style={{
-                    marginTop: 4,
-                    width: "100%",
-                    height: 48,
-                    background: "#111827",
-                    color: "white",
-                    border: "none",
-                    borderRadius: 10,
-                    fontSize: 14,
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 6,
-                    fontFamily: "inherit",
-                    boxShadow: "0 8px 24px rgba(17,24,39,0.2)",
-                    transition: "opacity 0.2s",
-                  }}
-                  onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
-                  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
-                >
-                  Continue{" "}
-                  <ArrowRightIcon
-                    size={14}
-                    strokeWidth={2}
-                    style={{ transition: "transform 0.2s" }}
-                  />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ═══ PHASE 2: ELIGIBILITY (one question at a time) ═══ */}
-          {phase === "eligibility" && (
-            <div key={qIndex} style={{ animation: "fadeUp 0.35s ease" }}>
-              {/* Progress bar */}
-              <div
-                style={{
-                  height: 2,
-                  background: "rgba(0,0,0,0.06)",
-                  borderRadius: 99,
-                  overflow: "hidden",
-                  marginBottom: 28,
-                }}
-              >
-                <div
-                  style={{
-                    height: "100%",
-                    borderRadius: 99,
-                    background:
-                      "linear-gradient(90deg, #111827 0%, #374151 100%)",
-                    width: `${progressPct}%`,
-                    transition: "width 0.5s ease",
-                  }}
-                />
-              </div>
-
-              <div style={{ marginBottom: 28 }}>
-                {/* Question label + counter */}
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "flex-start",
-                    marginBottom: 6,
-                  }}
-                >
-                  <label
-                    style={{
-                      fontSize: 16,
-                      fontWeight: 700,
-                      color: "#111827",
-                      lineHeight: 1.45,
-                      flex: 1,
-                      letterSpacing: "-0.02em",
-                    }}
-                  >
-                    {currentQ.label}
-                  </label>
-                  <span
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: "rgba(0,0,0,0.3)",
-                      flexShrink: 0,
-                      marginLeft: 10,
-                      marginTop: 2,
-                      fontVariantNumeric: "tabular-nums",
-                    }}
-                  >
-                    {qIndex + 1}/{QUESTIONS.length}
-                  </span>
-                </div>
-                {currentQ.hint && (
-                  <p
-                    style={{
-                      fontSize: 11,
-                      color: "#9ca3af",
-                      margin: "0 0 14px",
-                    }}
-                  >
-                    {currentQ.hint}
-                  </p>
-                )}
-
-                {/* Text/number input */}
-                {(currentQ.type === "text" || currentQ.type === "number") && (
-                  <input
-                    key={currentQ.key}
-                    type={currentQ.type}
-                    autoFocus
-                    style={{ ...inputStyle, height: 52, fontSize: 15 }}
-                    placeholder={currentQ.hint ?? ""}
-                    value={answers[currentQ.key as AnswerKey]}
-                    onChange={(e) =>
-                      setAnswers((prev) => ({
-                        ...prev,
-                        [currentQ.key]: e.target.value,
-                      }))
-                    }
-                    onKeyDown={(e) => e.key === "Enter" && handleNext()}
-                  />
-                )}
-
-                {/* Yes/No */}
-                {currentQ.type === "yesno" && (
+              {/* ═══ PHASE 2: ELIGIBILITY (one question at a time) ═══ */}
+              {phase === "eligibility" && (
+                <div key={qIndex} style={{ animation: "fadeUp 0.35s ease" }}>
+                  {/* Progress bar */}
                   <div
                     style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: 10,
-                      marginTop: 6,
+                      height: 2,
+                      background: "rgba(0,0,0,0.06)",
+                      borderRadius: 99,
+                      overflow: "hidden",
+                      marginBottom: 28,
                     }}
                   >
-                    {(["yes", "no"] as const).map((opt) => {
-                      const sel = answers[currentQ.key as AnswerKey] === opt;
-                      return (
-                        <button
-                          key={opt}
-                          onClick={() =>
-                            setAnswers((prev) => ({
-                              ...prev,
-                              [currentQ.key]: opt,
-                            }))
-                          }
-                          style={{
-                            height: 52,
-                            borderRadius: 10,
-                            border: `1.5px solid ${sel ? "#111827" : "rgba(0,0,0,0.1)"}`,
-                            background: sel
-                              ? "#111827"
-                              : "rgba(255,255,255,0.5)",
-                            color: sel ? "white" : "#374151",
-                            fontSize: 14,
-                            fontWeight: 600,
-                            cursor: "pointer",
-                            fontFamily: "inherit",
-                            transition: "all 0.18s ease",
-                            backdropFilter: "blur(8px)",
-                          }}
-                        >
-                          {opt === "yes" ? "Yes" : "No"}
-                        </button>
-                      );
-                    })}
+                    <div
+                      style={{
+                        height: "100%",
+                        borderRadius: 99,
+                        background:
+                          "linear-gradient(90deg, #111827 0%, #374151 100%)",
+                        width: `${progressPct}%`,
+                        transition: "width 0.5s ease",
+                      }}
+                    />
                   </div>
-                )}
-              </div>
 
-              {/* Actions */}
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                <button
-                  onClick={handleNext}
-                  disabled={submitting}
-                  style={{
-                    width: "100%",
-                    height: 48,
-                    background: "#111827",
-                    color: "white",
-                    border: "none",
-                    borderRadius: 10,
-                    fontSize: 14,
-                    fontWeight: 700,
-                    cursor: submitting ? "not-allowed" : "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 6,
-                    fontFamily: "inherit",
-                    boxShadow: "0 8px 24px rgba(17,24,39,0.18)",
-                    opacity: submitting ? 0.6 : 1,
-                    transition: "opacity 0.2s",
-                  }}
-                  onMouseEnter={(e) =>
-                    !submitting && (e.currentTarget.style.opacity = "0.85")
-                  }
-                  onMouseLeave={(e) =>
-                    !submitting && (e.currentTarget.style.opacity = "1")
-                  }
-                >
-                  {submitting
-                    ? "Checking…"
-                    : qIndex < QUESTIONS.length - 1
-                      ? "Continue"
-                      : "See my results"}
-                  {!submitting && <ArrowRightIcon size={14} strokeWidth={2} />}
-                </button>
+                  <div style={{ marginBottom: 28 }}>
+                    {/* Question label + counter */}
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        marginBottom: 6,
+                      }}
+                    >
+                      <label
+                        style={{
+                          fontSize: 16,
+                          fontWeight: 700,
+                          color: "#111827",
+                          lineHeight: 1.45,
+                          flex: 1,
+                          letterSpacing: "-0.02em",
+                        }}
+                      >
+                        {currentQ.label}
+                      </label>
+                      <span
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 600,
+                          color: "rgba(0,0,0,0.3)",
+                          flexShrink: 0,
+                          marginLeft: 10,
+                          marginTop: 2,
+                          fontVariantNumeric: "tabular-nums",
+                        }}
+                      >
+                        {qIndex + 1}/{QUESTIONS.length}
+                      </span>
+                    </div>
+                    {currentQ.hint && (
+                      <p
+                        style={{
+                          fontSize: 11,
+                          color: "#9ca3af",
+                          margin: "0 0 14px",
+                        }}
+                      >
+                        {currentQ.hint}
+                      </p>
+                    )}
 
-                {qIndex > 0 && (
-                  <button
-                    onClick={() => setQIndex((i) => i - 1)}
-                    style={{
-                      width: "100%",
-                      height: 36,
-                      background: "none",
-                      border: "none",
-                      color: "rgba(0,0,0,0.35)",
-                      fontSize: 12,
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 4,
-                      fontFamily: "inherit",
-                      transition: "color 0.2s",
-                    }}
-                    onMouseEnter={(e) =>
-                      (e.currentTarget.style.color = "#111827")
-                    }
-                    onMouseLeave={(e) =>
-                      (e.currentTarget.style.color = "rgba(0,0,0,0.35)")
-                    }
+                    {/* Text/number input */}
+                    {(currentQ.type === "text" ||
+                      currentQ.type === "number") && (
+                      <input
+                        key={currentQ.key}
+                        type={currentQ.type}
+                        autoFocus
+                        style={{ ...inputStyle, height: 52, fontSize: 15 }}
+                        placeholder={currentQ.hint ?? ""}
+                        value={answers[currentQ.key as AnswerKey]}
+                        onChange={(e) =>
+                          setAnswers((prev) => ({
+                            ...prev,
+                            [currentQ.key]: e.target.value,
+                          }))
+                        }
+                        onKeyDown={(e) => e.key === "Enter" && handleNext()}
+                      />
+                    )}
+
+                    {/* Yes/No */}
+                    {currentQ.type === "yesno" && (
+                      <div
+                        style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gap: 10,
+                          marginTop: 6,
+                        }}
+                      >
+                        {(["yes", "no"] as const).map((opt) => {
+                          const sel =
+                            answers[currentQ.key as AnswerKey] === opt;
+                          return (
+                            <button
+                              key={opt}
+                              onClick={() =>
+                                setAnswers((prev) => ({
+                                  ...prev,
+                                  [currentQ.key]: opt,
+                                }))
+                              }
+                              style={{
+                                height: 52,
+                                borderRadius: 10,
+                                border: `1.5px solid ${sel ? "#111827" : "rgba(0,0,0,0.1)"}`,
+                                background: sel
+                                  ? "#111827"
+                                  : "rgba(255,255,255,0.5)",
+                                color: sel ? "white" : "#374151",
+                                fontSize: 14,
+                                fontWeight: 600,
+                                cursor: "pointer",
+                                fontFamily: "inherit",
+                                transition: "all 0.18s ease",
+                                backdropFilter: "blur(8px)",
+                              }}
+                            >
+                              {opt === "yes" ? "Yes" : "No"}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div
+                    style={{ display: "flex", flexDirection: "column", gap: 8 }}
                   >
-                    <ChevronLeft size={13} /> Go back
-                  </button>
-                )}
-              </div>
+                    <button
+                      onClick={handleNext}
+                      disabled={submitting}
+                      style={{
+                        width: "100%",
+                        height: 48,
+                        background: "#111827",
+                        color: "white",
+                        border: "none",
+                        borderRadius: 10,
+                        fontSize: 14,
+                        fontWeight: 700,
+                        cursor: submitting ? "not-allowed" : "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 6,
+                        fontFamily: "inherit",
+                        boxShadow: "0 8px 24px rgba(17,24,39,0.18)",
+                        opacity: submitting ? 0.6 : 1,
+                        transition: "opacity 0.2s",
+                      }}
+                      onMouseEnter={(e) =>
+                        !submitting && (e.currentTarget.style.opacity = "0.85")
+                      }
+                      onMouseLeave={(e) =>
+                        !submitting && (e.currentTarget.style.opacity = "1")
+                      }
+                    >
+                      {submitting
+                        ? "Checking…"
+                        : qIndex < QUESTIONS.length - 1
+                          ? "Continue"
+                          : "See my results"}
+                      {!submitting && (
+                        <ArrowRightIcon size={14} strokeWidth={2} />
+                      )}
+                    </button>
+
+                    {qIndex > 0 && (
+                      <button
+                        onClick={() => setQIndex((i) => i - 1)}
+                        style={{
+                          width: "100%",
+                          height: 36,
+                          background: "none",
+                          border: "none",
+                          color: "rgba(0,0,0,0.35)",
+                          fontSize: 12,
+                          fontWeight: 600,
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          gap: 4,
+                          fontFamily: "inherit",
+                          transition: "color 0.2s",
+                        }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.color = "#111827")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.color = "rgba(0,0,0,0.35)")
+                        }
+                      >
+                        <ChevronLeft size={13} /> Go back
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+
+            {/* Footer note */}
+            <p
+              style={{
+                textAlign: "center",
+                fontSize: 11,
+                color: "#9ca3af",
+                marginTop: 16,
+              }}
+            >
+              Free · No credit check · Takes ~3 minutes
+            </p>
+          </div>
+
+          <style>{`@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }`}</style>
+          <ToastContainer toasts={toasts} onDismiss={dismiss} />
         </div>
-
-        {/* Footer note */}
-        <p
-          style={{
-            textAlign: "center",
-            fontSize: 11,
-            color: "#9ca3af",
-            marginTop: 16,
-          }}
-        >
-          Free · No credit check · Takes ~3 minutes
-        </p>
       </div>
-
-      <style>{`@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }`}</style>
-      <ToastContainer toasts={toasts} onDismiss={dismiss} />
     </div>
   );
 }
