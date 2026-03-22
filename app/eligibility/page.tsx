@@ -92,14 +92,67 @@ export default function ApplicationPage() {
     (question.id !== "postalCode" ||
       /^[A-Z][0-9][A-Z] [0-9][A-Z][0-9]$/.test(String(answers[question.id])));
 
+<<<<<<< Updated upstream
   const handleNext = () => {
     if (isLastStep) {
       handleSubmit();
+=======
+  const [phase, setPhase] = useState<"account" | "eligibility">("account");
+  const [isTypingPassword, setIsTypingPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [account, setAccount] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    postalCode: "",
+    password: "",
+  });
+  const [qIndex, setQIndex] = useState(0);
+  const [answers, setAnswers] = useState<Answers>({
+    householdSize: "",
+    annualIncome: "",
+    hasArrears: "",
+    isElectricHeat: "",
+    isEnbridgeCustomer: "",
+    isNorthernOntario: "",
+    isOWSP: "",
+  });
+
+  const currentQ = QUESTIONS[qIndex];
+  const progressPct = ((qIndex + 1) / QUESTIONS.length) * 100;
+
+  // ── Account submit ──
+  function handleAccountSubmit() {
+    if (!account.firstName.trim())
+      return toast("Please enter your first name.", "error");
+    if (!account.lastName.trim())
+      return toast("Please enter your last name.", "error");
+    if (!account.email.includes("@"))
+      return toast("Please enter a valid email address.", "error");
+    if (!/^[A-Za-z]\d[A-Za-z]/.test(account.postalCode.replace(/\s/, "")))
+      return toast("Enter a valid Canadian postal code.", "error");
+    if (account.password.length < 6)
+      return toast("Password must be at least 6 characters.", "error");
+    setAnswers((prev) => ({ ...prev, postalCode: account.postalCode }));
+    toast("Account info saved — let's check your eligibility!", "success");
+    setTimeout(() => setPhase("eligibility"), 350);
+  }
+
+  // ── Eligibility advance ──
+  function handleNext() {
+    const val = answers[currentQ.key as AnswerKey];
+    if (!val.trim())
+      return toast("Please answer this question to continue.", "error");
+    if (qIndex < QUESTIONS.length - 1) {
+      setQIndex((i) => i + 1);
+>>>>>>> Stashed changes
     } else {
       setCurrentStep((prev) => prev + 1);
     }
   };
 
+<<<<<<< Updated upstream
   const handlePrevious = () => {
     if (currentStep > 0) {
       setCurrentStep((prev) => prev - 1);
@@ -128,6 +181,22 @@ export default function ApplicationPage() {
   };
 
   const handleSubmit = async () => {
+=======
+  async function handleFinish() {
+    setSubmitting(true);
+    toast("Checking your eligibility…", "info");
+    const payload = {
+      postalCode: answers.postalCode || account.postalCode,
+      householdSize: parseInt(answers.householdSize) || 1,
+      annualIncome: parseInt(answers.annualIncome) || 0,
+      hasArrears: answers.hasArrears === "yes",
+      isElectricHeat: answers.isElectricHeat === "yes",
+      isEnbridgeCustomer: answers.isEnbridgeCustomer === "yes",
+      isNorthernOntario: answers.isNorthernOntario === "yes",
+      isOWSP: answers.isOWSP === "yes",
+      monthlyKwh: 700,
+    };
+>>>>>>> Stashed changes
     try {
       const res = await fetch("/api/eligibility", {
         method: "POST",
@@ -343,6 +412,7 @@ export default function ApplicationPage() {
             />
           </motion.div>
 
+<<<<<<< Updated upstream
           {/* Question */}
           <AnimatePresence mode="wait">
             <motion.div
@@ -356,6 +426,178 @@ export default function ApplicationPage() {
                 initial={{ opacity: 0, y: -6 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
+=======
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: 11 }}
+              >
+                {/* Name row */}
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr 1fr",
+                    gap: 10,
+                  }}
+                >
+                  {(
+                    [
+                      ["firstName", "First name", "Jane"],
+                      ["lastName", "Last name", "Doe"],
+                    ] as const
+                  ).map(([key, label, ph]) => (
+                    <div
+                      key={key}
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 5,
+                      }}
+                    >
+                      <label
+                        style={{
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: "#374151",
+                          letterSpacing: "0.02em",
+                        }}
+                      >
+                        {label}
+                      </label>
+                      <input
+                        style={inputStyle}
+                        placeholder={ph}
+                        value={account[key]}
+                        onChange={(e) =>
+                          setAccount((a) => ({ ...a, [key]: e.target.value }))
+                        }
+                        autoFocus={key === "firstName"}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Email */}
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
+                >
+                  <label
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: "#374151",
+                      letterSpacing: "0.02em",
+                    }}
+                  >
+                    Email
+                  </label>
+                  <input
+                    style={inputStyle}
+                    type="email"
+                    placeholder="jane@example.com"
+                    value={account.email}
+                    onChange={(e) =>
+                      setAccount((a) => ({ ...a, email: e.target.value }))
+                    }
+                  />
+                </div>
+
+                {/* Postal */}
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
+                >
+                  <label
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: "#374151",
+                      letterSpacing: "0.02em",
+                    }}
+                  >
+                    Postal code
+                  </label>
+                  <input
+                    style={inputStyle}
+                    placeholder="M5V 2T6"
+                    value={account.postalCode}
+                    onChange={(e) =>
+                      setAccount((a) => ({
+                        ...a,
+                        postalCode: e.target.value.toUpperCase(),
+                      }))
+                    }
+                  />
+                </div>
+
+                {/* Password */}
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 5 }}
+                >
+                  <label
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 700,
+                      color: "#374151",
+                      letterSpacing: "0.02em",
+                    }}
+                  >
+                    Password
+                  </label>
+                  <input
+                    style={inputStyle}
+                    type="password"
+                    placeholder="Min. 6 characters"
+                    value={account.password}
+                    onChange={(e) =>
+                      setAccount((a) => ({ ...a, password: e.target.value }))
+                    }
+                    onFocus={() => setIsTypingPassword(true)}
+                    onBlur={() => setIsTypingPassword(false)}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && handleAccountSubmit()
+                    }
+                  />
+                </div>
+
+                <button
+                  onClick={handleAccountSubmit}
+                  style={{
+                    marginTop: 4,
+                    width: "100%",
+                    height: 48,
+                    background: "#111827",
+                    color: "white",
+                    border: "none",
+                    borderRadius: 10,
+                    fontSize: 14,
+                    fontWeight: 700,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
+                    fontFamily: "inherit",
+                    boxShadow: "0 8px 24px rgba(17,24,39,0.2)",
+                    transition: "opacity 0.2s",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.88")}
+                  onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+                >
+                  Continue{" "}
+                  <ArrowRightIcon
+                    size={14}
+                    strokeWidth={2}
+                    style={{ transition: "transform 0.2s" }}
+                  />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ═══ PHASE 2: ELIGIBILITY (one question at a time) ═══ */}
+          {phase === "eligibility" && (
+            <div key={qIndex} style={{ animation: "fadeUp 0.35s ease" }}>
+              {/* Progress bar */}
+              <div
+>>>>>>> Stashed changes
                 style={{
                   fontSize: "24px",
                   fontWeight: "900",
@@ -430,6 +672,7 @@ export default function ApplicationPage() {
                 </div>
               )}
 
+<<<<<<< Updated upstream
               {/* NUMBER */}
               {question.type === "number" && (
                 <motion.input
@@ -440,6 +683,77 @@ export default function ApplicationPage() {
                   placeholder="Enter amount..."
                   value={answers[question.id] || ""}
                   onChange={(e) => handleAnswer(parseInt(e.target.value) || "")}
+=======
+                {/* Text/number input */}
+                {(currentQ.type === "text" || currentQ.type === "number") && (
+                  <input
+                    key={currentQ.key}
+                    type={currentQ.type}
+                    autoFocus
+                    style={{ ...inputStyle, height: 52, fontSize: 15 }}
+                    placeholder={currentQ.hint ?? ""}
+                    value={answers[currentQ.key as AnswerKey]}
+                    onChange={(e) =>
+                      setAnswers((prev) => ({
+                        ...prev,
+                        [currentQ.key]: e.target.value,
+                      }))
+                    }
+                    onKeyDown={(e) => e.key === "Enter" && handleNext()}
+                  />
+                )}
+
+                {/* Yes/No */}
+                {currentQ.type === "yesno" && (
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: 10,
+                      marginTop: 6,
+                    }}
+                  >
+                    {(["yes", "no"] as const).map((opt) => {
+                      const sel = answers[currentQ.key as AnswerKey] === opt;
+                      return (
+                        <button
+                          key={opt}
+                          onClick={() =>
+                            setAnswers((prev) => ({
+                              ...prev,
+                              [currentQ.key]: opt,
+                            }))
+                          }
+                          style={{
+                            height: 52,
+                            borderRadius: 10,
+                            border: `1.5px solid ${sel ? "#111827" : "rgba(0,0,0,0.1)"}`,
+                            background: sel
+                              ? "#111827"
+                              : "rgba(255,255,255,0.5)",
+                            color: sel ? "white" : "#374151",
+                            fontSize: 14,
+                            fontWeight: 600,
+                            cursor: "pointer",
+                            fontFamily: "inherit",
+                            transition: "all 0.18s ease",
+                            backdropFilter: "blur(8px)",
+                          }}
+                        >
+                          {opt === "yes" ? "Yes" : "No"}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <button
+                  onClick={handleNext}
+                  disabled={submitting}
+>>>>>>> Stashed changes
                   style={{
                     width: "100%",
                     padding: "12px 14px",
