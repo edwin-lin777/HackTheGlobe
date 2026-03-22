@@ -1585,7 +1585,7 @@ export default function Dashboard() {
           }}
         >
           <img
-            src="/logor.png"
+            src="/logo.png"
             alt="Navi$"
             style={{ height: 32, width: "auto" }}
           />
@@ -1597,7 +1597,7 @@ export default function Dashboard() {
               letterSpacing: "-0.02em",
             }}
           >
-            SubsidyAccess
+            Navi$
           </span>
         </Link>
 

@@ -52,7 +52,7 @@ export default function B2BLogin() {
           }}
         >
           <img
-            src="/logor.png"
+            src="/logo.png"
             alt="Navi$"
             style={{ height: 32, width: "auto" }}
           />
@@ -64,7 +64,7 @@ export default function B2BLogin() {
               letterSpacing: "-0.02em",
             }}
           >
-            SubsidyAccess
+            Navi$
           </span>
         </Link>
       </div>
