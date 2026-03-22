@@ -210,7 +210,7 @@ export function handleExportReport() {
   <div class="header">
     <div>
       <h1>Energy Support Outcomes — Q1 2026</h1>
-      <div class="header-sub">Toronto Community Housing Corporation &nbsp;·&nbsp; Prepared by SubsidyAccess</div>
+      <div class="header-sub">Toronto Community Housing Corporation &nbsp;·&nbsp; Prepared by Navi$</div>
     </div>
     <div class="header-right">Generated ${today}<br/>v1.2 — Draft, internal use only</div>
   </div>
