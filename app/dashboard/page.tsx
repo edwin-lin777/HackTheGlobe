@@ -850,29 +850,6 @@ function ProgramCard({
             Apply now <ExternalLink size={10} />
           </button>
 
-          {/* SECONDARY: Fill out info → intake (download PDF, etc.) */}
-          <button
-            type="button"
-            onClick={() =>
-              router.push(`/program-intake?programId=${program.id}`)
-            }
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "4px",
-              background: "white",
-              padding: "6px 12px",
-              borderRadius: "6px",
-              fontSize: "11px",
-              fontWeight: "600",
-              border: "1px solid #e5e7eb",
-              cursor: "pointer",
-              color: "#374151",
-            }}
-          >
-            Fill out info
-          </button>
-
           <select
             value={program.status}
             onChange={(e) =>
