@@ -1,102 +1,415 @@
 "use client";
-import Link from "next/link";
-import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  ChevronRight,
-  CheckCircle,
-  AlertCircle,
-  ArrowLeft,
-  Zap,
-} from "lucide-react";
 
-type Question = {
-  id: string;
-  label: string;
-  question: string;
-  type: "yes_no" | "number" | "select" | "postal";
-  options?: { value: string; label: string }[];
-  help?: string;
+import React, { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { CheckIcon, ArrowRightIcon, ChevronLeft } from "lucide-react";
+
+// ================================================================
+// TOAST
+// ================================================================
+type ToastType = {
+  id: number;
+  message: string;
+  type: "success" | "error" | "info";
 };
 
-const QUESTIONS: Question[] = [
+function ToastContainer({
+  toasts,
+  onDismiss,
+}: {
+  toasts: ToastType[];
+  onDismiss: (id: number) => void;
+}) {
+  return (
+    <div
+      style={{
+        position: "fixed",
+        bottom: 24,
+        right: 24,
+        display: "flex",
+        flexDirection: "column",
+        transform: "translateX(-50)",
+        gap: 8,
+        animation: "toastIn 0.25s ease",
+        zIndex: 999,
+        pointerEvents: "none",
+      }}
+    >
+      {toasts.map((t) => (
+        <div
+          key={t.id}
+          style={{
+            pointerEvents: "all",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            background:
+              t.type === "success"
+                ? "#f0fdf4"
+                : t.type === "error"
+                  ? "#fef2f2"
+                  : "#eff6ff",
+            border: `1px solid ${t.type === "success" ? "#a7f3d0" : t.type === "error" ? "#fecaca" : "#bfdbfe"}`,
+            color:
+              t.type === "success"
+                ? "#065f46"
+                : t.type === "error"
+                  ? "#ff4d4d"
+                  : "#1e40af",
+            borderRadius: 12,
+            padding: "11px 16px",
+            fontSize: 13,
+            fontWeight: 600,
+            boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+            minWidth: 260,
+            maxWidth: 340,
+            animation: "toastIn 1s ease",
+          }}
+        >
+          <span style={{ flex: 1 }}>{t.message}</span>
+          <button
+            onClick={() => onDismiss(t.id)}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              opacity: 0.45,
+              fontSize: 18,
+              lineHeight: 1,
+              padding: 0,
+              color: "inherit",
+            }}
+          >
+            ×
+          </button>
+        </div>
+      ))}
+      <style>{`@keyframes toastIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }`}</style>
+    </div>
+  );
+}
+
+function useToast() {
+  const [toasts, setToasts] = useState<ToastType[]>([]);
+  const counter = useRef(0);
+  function toast(message: string, type: ToastType["type"] = "info") {
+    const id = ++counter.current;
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(
+      () => setToasts((prev) => prev.filter((t) => t.id !== id)),
+      3500,
+    );
+  }
+  function dismiss(id: number) {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  }
+  return { toasts, toast, dismiss };
+}
+
+// ================================================================
+// CLOUD MASCOT
+// ================================================================
+function CloudMascot({ isTypingPassword }: { isTypingPassword: boolean }) {
+  const [eyePos, setEyePos] = useState({ x: 0, y: 0 });
+  const [blink, setBlink] = useState(false);
+
+  useEffect(() => {
+    const handle = (e: MouseEvent) => {
+      setEyePos({
+        x: (e.clientX / window.innerWidth - 0.5) * 30,
+        y: (e.clientY / window.innerHeight - 0.5) * 15,
+      });
+    };
+    window.addEventListener("mousemove", handle);
+    return () => window.removeEventListener("mousemove", handle);
+  }, []);
+
+  useEffect(() => {
+    const t = setInterval(() => {
+      setBlink(true);
+      setTimeout(() => setBlink(false), 180);
+    }, 3200);
+    return () => clearInterval(t);
+  }, []);
+
+  const h = isTypingPassword ? 3 : blink ? 5 : 34;
+
+  return (
+    <div
+      style={{
+        position: "relative",
+        width: 150,
+        height: 84,
+        margin: "0 auto 4px",
+        flexShrink: 0,
+      }}
+    >
+      <svg
+        viewBox="0 0 150 84"
+        style={{
+          width: "100%",
+          height: "100%",
+          position: "absolute",
+          inset: 0,
+        }}
+      >
+        <defs>
+          <filter id="cs">
+            <feDropShadow
+              dx="0"
+              dy="2"
+              stdDeviation="3"
+              floodColor="#94a3b8"
+              floodOpacity="0.2"
+            />
+          </filter>
+        </defs>
+        <ellipse
+          cx="75"
+          cy="65"
+          rx="62"
+          ry="18"
+          fill="#f1f5f9"
+          filter="url(#cs)"
+        />
+        <circle cx="44" cy="50" r="20" fill="#f1f5f9" />
+        <circle cx="75" cy="42" r="26" fill="#f1f5f9" />
+        <circle cx="106" cy="50" r="18" fill="#f1f5f9" />
+        <path
+          d="M 60 68 Q 75 76 90 68"
+          stroke="#94a3b8"
+          strokeWidth="2.2"
+          fill="none"
+          strokeLinecap="round"
+        />
+        <ellipse cx="54" cy="68" rx="6" ry="3.5" fill="#fda4af" opacity="0.5" />
+        <ellipse cx="96" cy="68" rx="6" ry="3.5" fill="#fda4af" opacity="0.5" />
+      </svg>
+      {/* Eyes */}
+      {[58, 90].map((left, i) => (
+        <div
+          key={i}
+          style={{
+            position: "absolute",
+            top: 34,
+            left,
+            width: 22,
+            height: h,
+            borderRadius: isTypingPassword || blink ? "2px" : "50% / 60%",
+            background: isTypingPassword ? "#1e293b" : "white",
+            border: isTypingPassword ? "none" : "1.5px solid #e2e8f0",
+            overflow: "hidden",
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center",
+            transition: "all 0.15s ease",
+          }}
+        >
+          {!isTypingPassword && !blink && (
+            <div
+              style={{
+                width: 11,
+                height: 11,
+                borderRadius: "50%",
+                background: "#1e293b",
+                marginBottom: 2,
+                transform: `translate(${eyePos.x * 0.28}px, 0)`,
+                transition: "transform 0.1s ease",
+              }}
+            />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ================================================================
+// STEP DOTS  (shadcn-style from reference)
+// ================================================================
+function StepDots({ steps, current }: { steps: string[]; current: number }) {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 0,
+        marginBottom: 32,
+      }}
+    >
+      {steps.map((label, i) => (
+        <React.Fragment key={i}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              gap: 6,
+            }}
+          >
+            {/* Circle */}
+            <div
+              style={{
+                position: "relative",
+                width: 36,
+                height: 36,
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: 13,
+                fontWeight: 600,
+                background:
+                  i < current
+                    ? "rgba(0,0,0,0.08)"
+                    : i === current
+                      ? "#111827"
+                      : "rgba(0,0,0,0.04)",
+                color:
+                  i < current
+                    ? "rgba(0,0,0,0.5)"
+                    : i === current
+                      ? "white"
+                      : "rgba(0,0,0,0.25)",
+                boxShadow:
+                  i === current ? "0 0 0 4px rgba(17,24,39,0.08)" : "none",
+                transition: "all 0.5s ease",
+              }}
+            >
+              {i < current ? (
+                <CheckIcon
+                  size={14}
+                  strokeWidth={2.5}
+                  style={{ animation: "zoomIn 0.4s ease" }}
+                />
+              ) : (
+                <span>{i + 1}</span>
+              )}
+              {/* pulse ring for current */}
+              {i === current && (
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    borderRadius: "50%",
+                    background: "rgba(17,24,39,0.15)",
+                    filter: "blur(6px)",
+                    animation: "pulse 2s infinite",
+                  }}
+                />
+              )}
+            </div>
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: 600,
+                color: i <= current ? "#111827" : "#9ca3af",
+                letterSpacing: "0.02em",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {label}
+            </span>
+          </div>
+          {/* Connector line */}
+          {i < steps.length - 1 && (
+            <div
+              style={{
+                position: "relative",
+                width: 44,
+                height: 2,
+                marginBottom: 18,
+                flexShrink: 0,
+              }}
+            >
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "rgba(207,207,207,0.5)",
+                }}
+              />
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "rgba(17,24,39,0.35)",
+                  transformOrigin: "left",
+                  transform: `scaleX(${i < current ? 1 : 0})`,
+                  transition: "transform 0.6s ease",
+                }}
+              />
+            </div>
+          )}
+        </React.Fragment>
+      ))}
+      <style>{`
+        @keyframes zoomIn { from { opacity:0; transform:scale(0.5); } to { opacity:1; transform:scale(1); } }
+        @keyframes pulse { 0%,100% { opacity:0.6; } 50% { opacity:0.2; } }
+      `}</style>
+    </div>
+  );
+}
+
+// ================================================================
+// ELIGIBILITY QUESTIONS
+// ================================================================
+const QUESTIONS = [
   {
-    id: "postalCode",
-    label: "Postal code",
-    question: "What's your postal code?",
-    type: "postal",
-    help: "We use this to determine eligibility for regional programs.",
-  },
-  {
-    id: "householdSize",
-    label: "Household size",
-    question: "How many people live in your home?",
+    key: "householdSize",
+    label: "How many people live in your home?",
+    hint: "Including yourself",
     type: "number",
-    help: "This affects income eligibility thresholds.",
   },
   {
-    id: "annualIncome",
-    label: "Annual income",
-    question: "What is your household's gross annual income?",
+    key: "annualIncome",
+    label: "Approximate household income after tax ($/year)?",
+    hint: "e.g. 35000",
     type: "number",
-    help: "Before taxes. All income sources included.",
   },
   {
-    id: "isOWSP",
-    label: "Social assistance",
-    question: "Are you or anyone in your household on Ontario Works or ODSP?",
-    type: "yes_no",
-    help: "This qualifies you for OESP automatically.",
+    key: "hasArrears",
+    label: "Are you behind on your electricity or gas bill?",
+    hint: null,
+    type: "yesno",
   },
   {
-    id: "hasArrears",
-    label: "Overdue bill",
-    question: "Are you behind on your electricity or gas bill?",
-    type: "yes_no",
-    help: "Required for LEAP emergency assistance.",
+    key: "isElectricHeat",
+    label: "Is your home heated electrically?",
+    hint: "Baseboard heaters, heat pump",
+    type: "yesno",
   },
   {
-    id: "isElectricHeat",
-    label: "Heat type",
-    question: "Is your home heated with electricity?",
-    type: "yes_no",
-    help: "Affects certain program eligibility.",
+    key: "isEnbridgeCustomer",
+    label: "Do you have a natural gas bill from Enbridge?",
+    hint: null,
+    type: "yesno",
   },
   {
-    id: "isEnbridgeCustomer",
-    label: "Gas provider",
-    question: "Are you an Enbridge Gas customer?",
-    type: "yes_no",
-    help: "Required for Enbridge winterproofing.",
+    key: "isNorthernOntario",
+    label: "Do you live in Northern Ontario?",
+    hint: "e.g. Sudbury, Thunder Bay",
+    type: "yesno",
   },
   {
-    id: "isNorthernOntario",
-    label: "Location",
-    question: "Do you live in Northern Ontario?",
-    type: "yes_no",
-    help: "Northern Ontario Energy Credit eligibility.",
+    key: "isOWSP",
+    label: "Do you receive Ontario Works or ODSP?",
+    hint: null,
+    type: "yesno",
   },
-];
+] as const;
 
-export default function ApplicationPage() {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string | number>>({});
-  const [submitted, setSubmitted] = useState(false);
+type AnswerKey = (typeof QUESTIONS)[number]["key"];
+type Answers = Record<AnswerKey, string>;
 
-  const question = QUESTIONS[currentStep];
-  const progress = ((currentStep + 1) / QUESTIONS.length) * 100;
-  const isLastStep = currentStep === QUESTIONS.length - 1;
-  const isAnswered =
-    answers[question.id] !== undefined &&
-    answers[question.id] !== "" &&
-    (question.id !== "postalCode" ||
-      /^[A-Z][0-9][A-Z] [0-9][A-Z][0-9]$/.test(String(answers[question.id])));
+// ================================================================
+// MAIN PAGE
+// ================================================================
+export default function EligibilityPage() {
+  const router = useRouter();
+  const { toasts, toast, dismiss } = useToast();
 
-<<<<<<< Updated upstream
-  const handleNext = () => {
-    if (isLastStep) {
-      handleSubmit();
-=======
   const [phase, setPhase] = useState<"account" | "eligibility">("account");
   const [isTypingPassword, setIsTypingPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -146,47 +459,16 @@ export default function ApplicationPage() {
       return toast("Please answer this question to continue.", "error");
     if (qIndex < QUESTIONS.length - 1) {
       setQIndex((i) => i + 1);
->>>>>>> Stashed changes
     } else {
-      setCurrentStep((prev) => prev + 1);
+      handleFinish();
     }
-  };
+  }
 
-<<<<<<< Updated upstream
-  const handlePrevious = () => {
-    if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1);
-    }
-  };
-
-  const handleAnswer = (value: string | number | boolean) => {
-    setAnswers((prev) => ({
-      ...prev,
-      [question.id]:
-        typeof value === "boolean" ? (value ? "yes" : "no") : value,
-    }));
-  };
-
-  const handleBack = () => {
-    if (currentStep === 0) {
-      const ok = window.confirm(
-        "Are you sure you want to exit? Your answers will be lost.",
-      );
-      if (ok) {
-        window.location.href = "/";
-      }
-      return;
-    }
-    handlePrevious();
-  };
-
-  const handleSubmit = async () => {
-=======
   async function handleFinish() {
     setSubmitting(true);
     toast("Checking your eligibility…", "info");
     const payload = {
-      postalCode: answers.postalCode || account.postalCode,
+      postalCode: account.postalCode,
       householdSize: parseInt(answers.householdSize) || 1,
       annualIncome: parseInt(answers.annualIncome) || 0,
       hasArrears: answers.hasArrears === "yes",
@@ -196,237 +478,102 @@ export default function ApplicationPage() {
       isOWSP: answers.isOWSP === "yes",
       monthlyKwh: 700,
     };
->>>>>>> Stashed changes
     try {
       const res = await fetch("/api/eligibility", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          postalCode: (answers.postalCode as string)?.trim(),
-          householdSize: parseInt(`${answers.householdSize}`) || 1,
-          annualIncome: parseInt(`${answers.annualIncome}`) || 0,
-          isOWSP: answers.isOWSP === "yes",
-          hasArrears: answers.hasArrears === "yes",
-          isElectricHeat: answers.isElectricHeat === "yes",
-          isEnbridgeCustomer: answers.isEnbridgeCustomer === "yes",
-          isNorthernOntario: answers.isNorthernOntario === "yes",
-        }),
+        body: JSON.stringify(payload),
       });
-
-      if (!res.ok) {
-        console.error("API error:", res.status);
-        alert("Something went wrong. Please try again.");
-        return;
-      }
-
       const data = await res.json();
       sessionStorage.setItem("eligibilityResult", JSON.stringify(data));
-      setSubmitted(true);
-
-      setTimeout(() => {
-        window.location.href = "/dashboard";
-      }, 1500);
-    } catch (err) {
-      console.error("Error:", err);
-      alert("Something went wrong. Please try again.");
+      toast("Results ready!", "success");
+      setTimeout(() => router.push("/dashboard"), 600);
+    } catch {
+      toast("Something went wrong. Please try again.", "error");
+      setSubmitting(false);
     }
-  };
-
-  if (submitted) {
-    return (
-      <div
-        style={{
-          minHeight: "100vh",
-          background: "#f8fafc",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontFamily: "'DM Sans', 'Segoe UI', system-ui, sans-serif",
-        }}
-      >
-        <motion.div
-          initial={{ opacity: 0, scale: 0.93 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: "spring", stiffness: 380, damping: 28 }}
-          style={{
-            textAlign: "center",
-            background: "white",
-            borderRadius: "16px",
-            padding: "48px 32px",
-            boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
-            maxWidth: "320px",
-          }}
-        >
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{
-              delay: 0.2,
-              type: "spring",
-              stiffness: 400,
-              damping: 30,
-            }}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "60px",
-              height: "60px",
-              borderRadius: "50%",
-              background: "#f0fdf4",
-              marginBottom: "16px",
-            }}
-          >
-            <CheckCircle size={32} color="#059669" fill="#059669" />
-          </motion.div>
-          <h2
-            style={{
-              fontSize: "18px",
-              fontWeight: "800",
-              color: "#111827",
-              margin: "0 0 8px 0",
-              letterSpacing: "-0.02em",
-            }}
-          >
-            Great job!
-          </h2>
-          <p
-            style={{ fontSize: "12px", color: "#6b7280", margin: "0 0 12px 0" }}
-          >
-            We're calculating your personalized programs...
-          </p>
-          <motion.div
-            animate={{ width: ["0%", "100%"] }}
-            transition={{ duration: 1.2, ease: "easeInOut" }}
-            style={{
-              height: "2px",
-              background: "linear-gradient(90deg, #059669, #10b981)",
-              borderRadius: "99px",
-            }}
-          />
-        </motion.div>
-      </div>
-    );
   }
+
+  // ── Shared input style ──
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    height: 48,
+    padding: "0 14px",
+    border: "1px solid rgba(0,0,0,0.12)",
+    borderRadius: 10,
+    fontSize: 14,
+    color: "#111827",
+    background: "rgba(255,255,255,0.5)",
+    backdropFilter: "blur(8px)",
+    outline: "none",
+    fontFamily: "inherit",
+    transition: "border-color 0.2s, box-shadow 0.2s",
+    boxSizing: "border-box",
+  };
 
   return (
     <div
       style={{
         minHeight: "100vh",
-        background: "#f8fafc",
+        background:
+          "linear-gradient(135deg, #f0f9ff 0%, #fafafa 55%, #fdf4ff 100%)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "24px 16px",
         fontFamily: "'DM Sans', 'Segoe UI', system-ui, sans-serif",
       }}
     >
-      {/* NAV */}
-      <nav
-        style={{
-          background: "white",
-          borderBottom: "1px solid #f3f4f6",
-          padding: "0 28px",
-          height: "52px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          position: "sticky",
-          top: 0,
-          zIndex: 100,
-        }}
-      >
-        <Link
-          href="/"
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,600;9..40,700;9..40,800&display=swap');
+        * { box-sizing: border-box; }
+        input:focus { border-color: rgba(0,0,0,0.3) !important; box-shadow: 0 0 0 3px rgba(17,24,39,0.06) !important; }
+        input::placeholder { color: #9ca3af; }
+      `}</style>
+
+      <div style={{ width: "100%", maxWidth: 380 }}>
+        {/* Step dots */}
+        <StepDots
+          steps={["Your info", "Eligibility"]}
+          current={phase === "account" ? 0 : 1}
+        />
+
+        {/* Card */}
+        <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            textDecoration: "none",
+            background: "rgba(255,255,255,0.55)",
+            backdropFilter: "blur(16px)",
+            WebkitBackdropFilter: "blur(16px)",
+            borderRadius: 20,
+            border: "1px solid rgba(255,255,255,0.7)",
+            boxShadow:
+              "0 20px 60px rgba(15,23,42,0.08), 0 1px 0 rgba(255,255,255,0.8) inset",
+            padding: "28px 28px 24px",
+            overflow: "hidden",
           }}
         >
-          <div
-            style={{
-              width: "27px",
-              height: "27px",
-              borderRadius: "7px",
-              background: "#1d4ed8",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Zap size={13} color="white" fill="white" />
-          </div>
-          <span
-            style={{
-              fontSize: "14px",
-              fontWeight: "800",
-              color: "#111827",
-              letterSpacing: "-0.02em",
-            }}
-          >
-            SubsidyAccess
-          </span>
-        </Link>
-        <span
-          style={{
-            fontSize: "11px",
-            fontWeight: "600",
-            color: "#9ca3af",
-          }}
-        >
-          Step {currentStep + 1} of {QUESTIONS.length}
-        </span>
-      </nav>
+          {/* ═══ PHASE 1: ACCOUNT ═══ */}
+          {phase === "account" && (
+            <div style={{ animation: "fadeUp 0.4s ease" }}>
+              <CloudMascot isTypingPassword={isTypingPassword} />
 
-      {/* CONTENT */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          minHeight: "calc(100vh - 52px)",
-          padding: "32px 20px",
-        }}
-      >
-        <div style={{ width: "100%", maxWidth: "420px" }}>
-          {/* Progress bar */}
-          <motion.div
-            initial={{ scaleX: 0 }}
-            animate={{ scaleX: 1 }}
-            transition={{ duration: 0.3 }}
-            style={{
-              height: "3px",
-              background: "#e5e7eb",
-              borderRadius: "99px",
-              marginBottom: "32px",
-              overflow: "hidden",
-              originX: 0,
-            }}
-          >
-            <motion.div
-              animate={{ width: `${progress}%` }}
-              transition={{ duration: 0.4, ease: "easeOut" }}
-              style={{
-                height: "100%",
-                background: "linear-gradient(90deg, #2563eb, #059669)",
-                borderRadius: "99px",
-              }}
-            />
-          </motion.div>
+              <div style={{ textAlign: "center", marginBottom: 22 }}>
+                <h2
+                  style={{
+                    fontSize: 19,
+                    fontWeight: 800,
+                    color: "#111827",
+                    margin: "0 0 4px",
+                    letterSpacing: "-0.03em",
+                  }}
+                >
+                  Create your account
+                </h2>
+                <p style={{ fontSize: 12, color: "#6b7280", margin: 0 }}>
+                  We'll save your results for you
+                </p>
+              </div>
 
-<<<<<<< Updated upstream
-          {/* Question */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentStep}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.28 }}
-            >
-              <motion.h2
-                initial={{ opacity: 0, y: -6 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 }}
-=======
               <div
                 style={{ display: "flex", flexDirection: "column", gap: 11 }}
               >
@@ -597,95 +744,76 @@ export default function ApplicationPage() {
             <div key={qIndex} style={{ animation: "fadeUp 0.35s ease" }}>
               {/* Progress bar */}
               <div
->>>>>>> Stashed changes
                 style={{
-                  fontSize: "24px",
-                  fontWeight: "900",
-                  color: "#111827",
-                  margin: "0 0 6px 0",
-                  letterSpacing: "-0.03em",
+                  height: 2,
+                  background: "rgba(0,0,0,0.06)",
+                  borderRadius: 99,
+                  overflow: "hidden",
+                  marginBottom: 28,
                 }}
               >
-                {question.question}
-              </motion.h2>
-
-              {question.help && (
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.15 }}
+                <div
                   style={{
-                    fontSize: "12px",
-                    color: "#6b7280",
-                    margin: "0 0 24px 0",
-                    lineHeight: 1.6,
+                    height: "100%",
+                    borderRadius: 99,
+                    background:
+                      "linear-gradient(90deg, #111827 0%, #374151 100%)",
+                    width: `${progressPct}%`,
+                    transition: "width 0.5s ease",
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: 28 }}>
+                {/* Question label + counter */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    marginBottom: 6,
                   }}
                 >
-                  {question.help}
-                </motion.p>
-              )}
-
-              {/* YES/NO */}
-              {question.type === "yes_no" && (
-                <div style={{ display: "flex", gap: "12px" }}>
-                  {[true, false].map((value, i) => (
-                    <motion.button
-                      key={i}
-                      initial={{ opacity: 0, scale: 0.92 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.15 + i * 0.06 }}
-                      onClick={() => handleAnswer(value)}
-                      style={{
-                        flex: 1,
-                        padding: "12px 16px",
-                        borderRadius: "10px",
-                        border: `2px solid ${
-                          answers[question.id] === (value ? "yes" : "no")
-                            ? "#2563eb"
-                            : "#e5e7eb"
-                        }`,
-                        background:
-                          answers[question.id] === (value ? "yes" : "no")
-                            ? "#eff6ff"
-                            : "white",
-                        fontSize: "13px",
-                        fontWeight: "600",
-                        color:
-                          answers[question.id] === (value ? "yes" : "no")
-                            ? "#1e40af"
-                            : "#374151",
-                        cursor: "pointer",
-                        transition: "all 0.16s",
-                      }}
-                      whileHover={{
-                        scale: 1.02,
-                        borderColor:
-                          answers[question.id] === (value ? "yes" : "no")
-                            ? "#2563eb"
-                            : "#d1d5db",
-                      }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      {value ? "Yes" : "No"}
-                    </motion.button>
-                  ))}
+                  <label
+                    style={{
+                      fontSize: 16,
+                      fontWeight: 700,
+                      color: "#111827",
+                      lineHeight: 1.45,
+                      flex: 1,
+                      letterSpacing: "-0.02em",
+                    }}
+                  >
+                    {currentQ.label}
+                  </label>
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 600,
+                      color: "rgba(0,0,0,0.3)",
+                      flexShrink: 0,
+                      marginLeft: 10,
+                      marginTop: 2,
+                      fontVariantNumeric: "tabular-nums",
+                    }}
+                  >
+                    {qIndex + 1}/{QUESTIONS.length}
+                  </span>
                 </div>
-              )}
+                {currentQ.hint && (
+                  <p
+                    style={{
+                      fontSize: 11,
+                      color: "#9ca3af",
+                      margin: "0 0 14px",
+                    }}
+                  >
+                    {currentQ.hint}
+                  </p>
+                )}
 
-<<<<<<< Updated upstream
-              {/* NUMBER */}
-              {question.type === "number" && (
-                <motion.input
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 }}
-                  type="number"
-                  placeholder="Enter amount..."
-                  value={answers[question.id] || ""}
-                  onChange={(e) => handleAnswer(parseInt(e.target.value) || "")}
-=======
                 {/* Text/number input */}
-                {(currentQ.type === "text" || currentQ.type === "number") && (
+                {currentQ.type === "number" && (
                   <input
                     key={currentQ.key}
                     type={currentQ.type}
@@ -753,259 +881,89 @@ export default function ApplicationPage() {
                 <button
                   onClick={handleNext}
                   disabled={submitting}
->>>>>>> Stashed changes
                   style={{
                     width: "100%",
-                    padding: "12px 14px",
-                    borderRadius: "10px",
-                    border: "2px solid #e5e7eb",
-                    fontSize: "14px",
-                    color: "#111827",
-                    fontFamily: "inherit",
-                    boxSizing: "border-box",
-                    transition: "all 0.16s",
-                  }}
-                  onFocus={(e) => {
-                    (e.target as HTMLInputElement).style.borderColor =
-                      "#2563eb";
-                    (e.target as HTMLInputElement).style.boxShadow =
-                      "0 0 0 3px rgba(37,99,235,0.1)";
-                  }}
-                  onBlur={(e) => {
-                    (e.target as HTMLInputElement).style.borderColor =
-                      "#e5e7eb";
-                    (e.target as HTMLInputElement).style.boxShadow = "none";
-                  }}
-                />
-              )}
-
-              {/* SELECT */}
-              {question.type === "select" && question.options && (
-                <div
-                  style={{
+                    height: 48,
+                    background: "#111827",
+                    color: "white",
+                    border: "none",
+                    borderRadius: 10,
+                    fontSize: 14,
+                    fontWeight: 700,
+                    cursor: submitting ? "not-allowed" : "pointer",
                     display: "flex",
-                    flexDirection: "column",
-                    gap: "8px",
-                  }}
-                >
-                  {question.options.map((opt, i) => (
-                    <motion.button
-                      key={opt.value}
-                      initial={{ opacity: 0, x: -6 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.15 + i * 0.06 }}
-                      onClick={() => handleAnswer(opt.value)}
-                      style={{
-                        padding: "12px 14px",
-                        borderRadius: "10px",
-                        border: `2px solid ${
-                          answers[question.id] === opt.value
-                            ? "#2563eb"
-                            : "#e5e7eb"
-                        }`,
-                        background:
-                          answers[question.id] === opt.value
-                            ? "#eff6ff"
-                            : "white",
-                        fontSize: "13px",
-                        fontWeight: "500",
-                        color:
-                          answers[question.id] === opt.value
-                            ? "#1e40af"
-                            : "#374151",
-                        cursor: "pointer",
-                        textAlign: "left",
-                        transition: "all 0.16s",
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                      }}
-                      whileHover={{
-                        scale: 1.01,
-                        borderColor:
-                          answers[question.id] === opt.value
-                            ? "#2563eb"
-                            : "#d1d5db",
-                      }}
-                      whileTap={{ scale: 0.98 }}
-                    >
-                      {opt.label}
-                      {answers[question.id] === opt.value && (
-                        <CheckCircle size={14} color="#2563eb" fill="#2563eb" />
-                      )}
-                    </motion.button>
-                  ))}
-                </div>
-              )}
-              {/* POSTAL CODE (X#X #X#) */}
-              {question.type === "postal" && (
-                <motion.input
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.15 }}
-                  type="text"
-                  placeholder="M5V 2T6"
-                  inputMode="text"
-                  autoComplete="postal-code"
-                  value={answers[question.id] || ""}
-                  onChange={(e) => {
-                    let v = e.target.value.toUpperCase();
-
-                    // Keep only letters, digits
-                    v = v.replace(/[^A-Z0-9]/g, "");
-
-                    // Limit to 6 raw chars (e.g. M5V2T6)
-                    v = v.slice(0, 6);
-
-                    // Insert space after 3rd char if we have more than 3
-                    if (v.length > 3) {
-                      v = v.slice(0, 3) + " " + v.slice(3);
-                    }
-
-                    setAnswers((prev) => ({
-                      ...prev,
-                      [question.id]: v,
-                    }));
-                  }}
-                  style={{
-                    width: "100%",
-                    padding: "12px 14px",
-                    borderRadius: "10px",
-                    border:
-                      answers._postalValid === "no"
-                        ? "2px solid #dc2626"
-                        : "2px solid #e5e7eb",
-                    fontSize: "14px",
-                    color: "#111827",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 6,
                     fontFamily: "inherit",
-                    boxSizing: "border-box",
-                    transition: "all 0.16s",
-                    letterSpacing: "0.08em",
+                    boxShadow: "0 8px 24px rgba(17,24,39,0.18)",
+                    opacity: submitting ? 0.6 : 1,
+                    transition: "opacity 0.2s",
                   }}
-                  onFocus={(e) => {
-                    (e.target as HTMLInputElement).style.borderColor =
-                      answers._postalValid === "no" ? "#dc2626" : "#2563eb";
-                    (e.target as HTMLInputElement).style.boxShadow =
-                      "0 0 0 3px rgba(37,99,235,0.1)";
-                  }}
-                  onBlur={(e) => {
-                    (e.target as HTMLInputElement).style.borderColor =
-                      answers._postalValid === "no" ? "#dc2626" : "#e5e7eb";
-                    (e.target as HTMLInputElement).style.boxShadow = "none";
-                  }}
-                />
-              )}
-            </motion.div>
-          </AnimatePresence>
-
-          {/* ACTIONS */}
-          <div
-            style={{
-              display: "flex",
-              gap: "10px",
-              marginTop: "40px",
-            }}
-          >
-            <motion.button
-              initial={{ opacity: 0, x: -6 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.25 }}
-              onClick={handleBack}
-              style={{
-                flex: 1,
-                padding: "10px 14px",
-                borderRadius: "10px",
-                border: "1px solid #e5e7eb",
-                background: "white",
-                fontSize: "12px",
-                fontWeight: "600",
-                color: "#6b7280",
-                cursor: "pointer",
-                opacity: currentStep === 0 ? 0.9 : 1,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "4px",
-                transition: "all 0.16s",
-              }}
-              whileHover={{ background: "#f3f4f6" }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <ArrowLeft size={12} /> Back
-            </motion.button>
-
-            <motion.button
-              initial={{ opacity: 0, x: 6 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.25 }}
-              onClick={handleNext}
-              disabled={!isAnswered}
-              style={{
-                flex: 2,
-                padding: "10px 14px",
-                borderRadius: "10px",
-                background: isAnswered
-                  ? "linear-gradient(135deg, #2563eb, #1e40af)"
-                  : "#e5e7eb",
-                border: "none",
-                fontSize: "12px",
-                fontWeight: "600",
-                color: isAnswered ? "white" : "#9ca3af",
-                cursor: isAnswered ? "pointer" : "not-allowed",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "4px",
-              }}
-              whileHover={isAnswered ? { scale: 1.01 } : {}}
-              whileTap={isAnswered ? { scale: 0.98 } : {}}
-            >
-              {isLastStep ? "See results" : "Next"} <ChevronRight size={12} />
-            </motion.button>
-          </div>
-
-          {/* SIDE INFO */}
-          {currentStep < 4 && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.35 }}
-              style={{
-                marginTop: "32px",
-                padding: "14px",
-                background: "white",
-                borderRadius: "10px",
-                border: "1px solid #e5e7eb",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  gap: "8px",
-                  alignItems: "flex-start",
-                }}
-              >
-                <AlertCircle
-                  size={12}
-                  color="#9ca3af"
-                  style={{ marginTop: "1px", flexShrink: 0 }}
-                />
-                <p
-                  style={{
-                    margin: 0,
-                    fontSize: "11px",
-                    color: "#6b7280",
-                    lineHeight: 1.6,
-                  }}
+                  onMouseEnter={(e) =>
+                    !submitting && (e.currentTarget.style.opacity = "0.85")
+                  }
+                  onMouseLeave={(e) =>
+                    !submitting && (e.currentTarget.style.opacity = "1")
+                  }
                 >
-                  Your information is encrypted and not stored. It's only used
-                  to calculate your eligibility.
-                </p>
+                  {submitting
+                    ? "Checking…"
+                    : qIndex < QUESTIONS.length - 1
+                      ? "Continue"
+                      : "See my results"}
+                  {!submitting && <ArrowRightIcon size={14} strokeWidth={2} />}
+                </button>
+
+                {qIndex > 0 && (
+                  <button
+                    onClick={() => setQIndex((i) => i - 1)}
+                    style={{
+                      width: "100%",
+                      height: 36,
+                      background: "none",
+                      border: "none",
+                      color: "rgba(0,0,0,0.35)",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 4,
+                      fontFamily: "inherit",
+                      transition: "color 0.2s",
+                    }}
+                    onMouseEnter={(e) =>
+                      (e.currentTarget.style.color = "#111827")
+                    }
+                    onMouseLeave={(e) =>
+                      (e.currentTarget.style.color = "rgba(0,0,0,0.35)")
+                    }
+                  >
+                    <ChevronLeft size={13} /> Go back
+                  </button>
+                )}
               </div>
-            </motion.div>
+            </div>
           )}
         </div>
+
+        {/* Footer note */}
+        <p
+          style={{
+            textAlign: "center",
+            fontSize: 11,
+            color: "#9ca3af",
+            marginTop: 16,
+          }}
+        >
+          Free · No credit check · Takes ~3 minutes
+        </p>
       </div>
+
+      <style>{`@keyframes fadeUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }`}</style>
+      <ToastContainer toasts={toasts} onDismiss={dismiss} />
     </div>
   );
 }
