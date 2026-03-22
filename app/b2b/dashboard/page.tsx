@@ -155,7 +155,7 @@ function Sidebar() {
           }}
         >
           <img
-            src="/logor.png"
+            src="/logo.png"
             alt="Navi$"
             style={{ height: 32, width: "auto" }}
           />
@@ -167,7 +167,7 @@ function Sidebar() {
               letterSpacing: "-0.02em",
             }}
           >
-            SubsidyAccess
+            Navi$
           </span>
         </Link>
       </div>
