@@ -20,349 +20,6 @@ import {
   ArrowRight,
 } from "lucide-react";
 
-function DocumentMasterChecklist({ programs }: { programs: Program[] }) {
-  const [checked, setChecked] = useState<Record<string, boolean>>({});
-
-  // Build doc → programs map
-  const docMap: Record<string, Program[]> = {};
-  programs.forEach((p) => {
-    p.documents.forEach((doc) => {
-      if (!docMap[doc]) docMap[doc] = [];
-      if (!docMap[doc].some((pp) => pp.id === p.id)) {
-        docMap[doc].push(p);
-      }
-    });
-  });
-
-  // Split into program‑specific and shared docs
-  const sharedDocs = Object.entries(docMap).filter(
-    ([, progs]) => progs.length > 1,
-  );
-  const perProgramDocs: { program: Program; docs: string[] }[] = programs.map(
-    (p) => {
-      const docsForProgram = p.documents.filter((doc) => {
-        const progs = docMap[doc] || [];
-        return progs.length === 1; // only show here if not shared
-      });
-      return { program: p, docs: Array.from(new Set(docsForProgram)) };
-    },
-  );
-
-  // Keys: program‑scoped docs + shared docs
-  const programDocKeys = perProgramDocs.flatMap(({ program, docs }) =>
-    docs.map((doc) => `${program.id}::${doc}`),
-  );
-  const sharedDocKeys = sharedDocs.map(([doc]) => `shared::${doc}`);
-  const allKeys = [...programDocKeys, ...sharedDocKeys];
-
-  const doneCount = allKeys.filter((k) => checked[k]).length;
-  const pct =
-    allKeys.length > 0 ? Math.round((doneCount / allKeys.length) * 100) : 0;
-  const allDone = doneCount === allKeys.length && allKeys.length > 0;
-
-  return (
-    <div
-      style={{
-        background: "white",
-        border: "1px solid #e5e7eb",
-        borderRadius: "13px",
-        overflow: "hidden",
-        marginTop: "20px",
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{ padding: "14px 18px 12px", borderBottom: "1px solid #f3f4f6" }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "flex-start",
-            marginBottom: "10px",
-          }}
-        >
-          <div>
-            <p
-              style={{
-                margin: "0 0 2px",
-                fontSize: "13px",
-                fontWeight: "700",
-                color: "#111827",
-              }}
-            >
-              Documents checklist
-            </p>
-            <p style={{ margin: 0, fontSize: "11px", color: "#6b7280" }}>
-              Everything needed by program — gather once
-            </p>
-          </div>
-          <span
-            style={{
-              background: allDone ? "#d1fae5" : "#f3f4f6",
-              color: allDone ? "#059669" : "#6b7280",
-              fontSize: "11px",
-              fontWeight: "700",
-              padding: "3px 10px",
-              borderRadius: "99px",
-              flexShrink: 0,
-            }}
-          >
-            {doneCount}/{allKeys.length} gathered
-          </span>
-        </div>
-        <div
-          style={{
-            height: "4px",
-            background: "#f3f4f6",
-            borderRadius: "99px",
-            overflow: "hidden",
-          }}
-        >
-          <div
-            style={{
-              height: "100%",
-              borderRadius: "99px",
-              background: allDone ? "#059669" : "#2563eb",
-              width: `${pct}%`,
-              transition: "width 0.3s ease",
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Per‑program sections */}
-      {perProgramDocs.map(({ program, docs }, idx) => {
-        if (docs.length === 0) return null;
-        const t = TYPE_CONFIG[program.type] || TYPE_CONFIG.ongoing;
-
-        return (
-          <div
-            key={program.id}
-            style={{
-              borderBottom:
-                idx < perProgramDocs.length - 1 || sharedDocs.length > 0
-                  ? "1px solid #f9fafb"
-                  : "none",
-              padding: "10px 18px 12px",
-            }}
-          >
-            {/* Program header */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                marginBottom: "6px",
-              }}
-            >
-              <span
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  color: "#111827",
-                }}
-              >
-                {program.name}
-              </span>
-              <span
-                style={{
-                  background: t.bg,
-                  color: t.color,
-                  border: `1px solid ${t.border}`,
-                  fontSize: "10px",
-                  fontWeight: "700",
-                  padding: "1px 6px",
-                  borderRadius: "99px",
-                }}
-              >
-                {program.shortName}
-              </span>
-            </div>
-
-            {docs.map((doc) => {
-              const key = `${program.id}::${doc}`;
-              const done = !!checked[key];
-              return (
-                <label
-                  key={key}
-                  style={{
-                    display: "flex",
-                    alignItems: "flex-start",
-                    gap: "10px",
-                    padding: "6px 0",
-                    cursor: "pointer",
-                  }}
-                  onClick={() =>
-                    setChecked((prev) => ({ ...prev, [key]: !prev[key] }))
-                  }
-                >
-                  <div
-                    style={{
-                      width: "16px",
-                      height: "16px",
-                      borderRadius: "4px",
-                      flexShrink: 0,
-                      marginTop: "2px",
-                      border: done ? "none" : "1.5px solid #d1d5db",
-                      background: done ? "#059669" : "white",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      transition: "all 0.12s",
-                    }}
-                  >
-                    {done && <CheckCircle size={10} color="white" />}
-                  </div>
-                  <p
-                    style={{
-                      margin: 0,
-                      fontSize: "13px",
-                      color: done ? "#9ca3af" : "#374151",
-                      textDecoration: done ? "line-through" : "none",
-                      lineHeight: 1.4,
-                    }}
-                  >
-                    {doc}
-                  </p>
-                </label>
-              );
-            })}
-          </div>
-        );
-      })}
-
-      {/* Shared documents across multiple programs */}
-      {sharedDocs.length > 0 && (
-        <div
-          style={{
-            padding: "10px 18px 12px",
-            borderTop: "1px solid #f3f4f6",
-          }}
-        >
-          <p
-            style={{
-              margin: "0 0 6px",
-              fontSize: "11px",
-              fontWeight: 700,
-              color: "#6b7280",
-              textTransform: "uppercase",
-              letterSpacing: "0.08em",
-            }}
-          >
-            Shared documents
-          </p>
-
-          {sharedDocs.map(([doc, progs]) => {
-            const key = `shared::${doc}`;
-            const done = !!checked[key];
-            return (
-              <label
-                key={key}
-                style={{
-                  display: "flex",
-                  alignItems: "flex-start",
-                  gap: "10px",
-                  padding: "6px 0",
-                  cursor: "pointer",
-                }}
-                onClick={() =>
-                  setChecked((prev) => ({ ...prev, [key]: !prev[key] }))
-                }
-              >
-                <div
-                  style={{
-                    width: "16px",
-                    height: "16px",
-                    borderRadius: "4px",
-                    flexShrink: 0,
-                    marginTop: "2px",
-                    border: done ? "none" : "1.5px solid #d1d5db",
-                    background: done ? "#059669" : "white",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    transition: "all 0.12s",
-                  }}
-                >
-                  {done && <CheckCircle size={10} color="white" />}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p
-                    style={{
-                      margin: "0 0 3px",
-                      fontSize: "13px",
-                      color: done ? "#9ca3af" : "#374151",
-                      textDecoration: done ? "line-through" : "none",
-                      lineHeight: 1.4,
-                    }}
-                  >
-                    {doc}
-                  </p>
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "4px",
-                      flexWrap: "wrap",
-                    }}
-                  >
-                    {progs.map((p) => {
-                      const t =
-                        TYPE_CONFIG[p.type] || TYPE_CONFIG.ongoing;
-                      return (
-                        <span
-                          key={p.id}
-                          style={{
-                            background: t.bg,
-                            color: t.color,
-                            border: `1px solid ${t.border}`,
-                            fontSize: "10px",
-                            fontWeight: "700",
-                            padding: "1px 6px",
-                            borderRadius: "99px",
-                          }}
-                        >
-                          {p.shortName}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-              </label>
-            );
-          })}
-        </div>
-      )}
-
-      {allDone && (
-        <div
-          style={{
-            padding: "11px 18px",
-            background: "#f0fdf4",
-            borderTop: "1px solid #a7f3d0",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
-        >
-          <CheckCircle size={13} color="#059669" />
-          <p
-            style={{
-              margin: 0,
-              fontSize: "12px",
-              color: "#059669",
-              fontWeight: "600",
-            }}
-          >
-            All documents gathered — you're ready to apply!
-          </p>
-        </div>
-      )}
-    </div>
-  );
-}
-
-
 // ================================================================
 // TYPES
 // ================================================================
@@ -402,7 +59,7 @@ type DashboardData = {
 };
 
 // ================================================================
-// DUMMY DATA — replace with sessionStorage when backend is ready
+// DUMMY DATA — fallback if sessionStorage empty
 // ================================================================
 const DUMMY: DashboardData = {
   programs: [
@@ -429,7 +86,8 @@ const DUMMY: DashboardData = {
       name: "Low-income Energy Assistance Program",
       shortName: "LEAP",
       type: "emergency",
-      description: `The Low-income Energy Assistance Program provides a one-time emergency payment to help low-income households cover overdue electricity or natural gas bills and avoid disconnection.`,
+      description:
+        "The Low-income Energy Assistance Program provides a one-time emergency payment to help low-income households cover overdue electricity or natural gas bills and avoid disconnection.",
       applyUrl: null,
       annualSaving: 650,
       monthlyCredit: null,
@@ -526,7 +184,7 @@ const STATUS_CONFIG: Record<
 };
 
 // ================================================================
-// 21DEV SAVINGS VISUALIZATION (adapted from BonusesIncentivesCard)
+// SAVINGS VISUALIZATION (dot ring)
 // ================================================================
 function SavingsVisualization({
   programs,
@@ -540,8 +198,11 @@ function SavingsVisualization({
 
   const cashPrograms = programs.filter((p) => p.annualSaving !== null);
   const freePrograms = programs.filter((p) => p.annualSaving === null);
-  const totalCash = cashPrograms.reduce((s, p) => s + (p.annualSaving ?? 0), 0);
-  const fillRatio = Math.min(totalCash / annualBill, 1);
+  const totalCash = cashPrograms.reduce(
+    (s, p) => s + (p.annualSaving ?? 0),
+    0,
+  );
+  const fillRatio = Math.min(annualBill > 0 ? totalCash / annualBill : 0, 1);
 
   const makeDots = (count: number, r: number, cx: number, cy: number) =>
     Array.from({ length: count }, (_, i) => {
@@ -635,7 +296,11 @@ function SavingsVisualization({
             ${totalCash.toLocaleString()}
           </p>
           <p
-            style={{ fontSize: "12px", color: "#6b7280", margin: "3px 0 0 0" }}
+            style={{
+              fontSize: "12px",
+              color: "#6b7280",
+              margin: "3px 0 0 0",
+            }}
           >
             per year
           </p>
@@ -696,7 +361,9 @@ function SavingsVisualization({
               fontWeight: "600",
             }}
           >
-            {Math.round((totalCash / annualBill) * 100)}% of bill
+            {annualBill > 0
+              ? `${Math.round((totalCash / annualBill) * 100)}% of bill`
+              : "0% of bill"}
           </p>
         </div>
         <div style={{ width: "1px", background: "#f3f4f6" }} />
@@ -750,7 +417,7 @@ function SavingsVisualization({
 }
 
 // ================================================================
-// SAVINGS MODAL
+// SAVINGS MODAL (unchanged usage)
 // ================================================================
 function SavingsModal({
   programs,
@@ -795,7 +462,6 @@ function SavingsModal({
         }}
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
         <div
           style={{
             display: "flex",
@@ -838,13 +504,11 @@ function SavingsModal({
           </button>
         </div>
 
-        {/* Dot visualization */}
         <SavingsVisualization
           programs={programs}
           annualBill={billImpact.annualBill}
         />
 
-        {/* Bill comparison bar */}
         <div
           style={{
             marginTop: "20px",
@@ -937,7 +601,6 @@ function SavingsModal({
           </p>
         </div>
 
-        {/* Per-program breakdown */}
         <div style={{ marginTop: "16px" }}>
           <p
             style={{
@@ -969,7 +632,11 @@ function SavingsModal({
                 }}
               >
                 <div
-                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                  }}
                 >
                   <div
                     style={{
@@ -1005,7 +672,7 @@ function SavingsModal({
 }
 
 // ================================================================
-// PROGRAM CARD
+// PROGRAM CARD — UPDATED BUTTONS
 // ================================================================
 function ProgramCard({
   program,
@@ -1025,25 +692,6 @@ function ProgramCard({
   const completedDocs = checked.filter(Boolean).length;
 
   const router = useRouter();
-  const [applying, setApplying] = useState(false);
-
-  function handleApplyClick(e: React.MouseEvent<HTMLButtonElement>) {
-    e.preventDefault();
-    if (applying) return;
-    setApplying(true);
-
-    sessionStorage.setItem("activeProgramId", program.id);
-    if (program.applyUrl) {
-      sessionStorage.setItem("activeProgramApplyUrl", program.applyUrl);
-    }
-
-    // small delay so the pressed state is visible
-    setTimeout(() => {
-      router.push(`/program-intake?programId=${program.id}`);
-    }, 180);
-  }
-
-
 
   return (
     <motion.div
@@ -1173,31 +821,57 @@ function ProgramCard({
             alignItems: "center",
           }}
         >
-          {program.applyUrl && (
-            <button
-              type="button"
-              onClick={handleApplyClick}
-              disabled={applying}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "4px",
-                background: applying ? "#0f172a" : t.color,
-                opacity: applying ? 0.85 : 1,
-                padding: "6px 12px",
-                borderRadius: "6px",
-                fontSize: "11px",
-                fontWeight: "600",
-                border: "none",
-                cursor: applying ? "default" : "pointer",
-                transform: applying ? "translateY(1px) scale(0.99)" : "none",
-                transition: "background 0.15s ease, opacity 0.15s ease, transform 0.12s ease",
-              }}
-            >
-              {applying ? "Opening…" : "Apply now"} <ExternalLink size={10} />
-            </button>
+          {/* PRIMARY: Apply now → program website */}
+          <button
+            type="button"
+            onClick={() => {
+              if (!program.applyUrl) {
+                alert(
+                  "This program does not have an online portal. Call your local agency to apply.",
+                );
+                return;
+              }
+              window.open(program.applyUrl, "_blank", "noopener,noreferrer");
+            }}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "4px",
+              background: t.color,
+              padding: "6px 12px",
+              borderRadius: "6px",
+              fontSize: "11px",
+              fontWeight: "600",
+              border: "none",
+              cursor: "pointer",
+              color: "white",
+            }}
+          >
+            Apply now <ExternalLink size={10} />
+          </button>
 
-          )}
+          {/* SECONDARY: Fill out info → intake (download PDF, etc.) */}
+          <button
+            type="button"
+            onClick={() =>
+              router.push(`/program-intake?programId=${program.id}`)
+            }
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "4px",
+              background: "white",
+              padding: "6px 12px",
+              borderRadius: "6px",
+              fontSize: "11px",
+              fontWeight: "600",
+              border: "1px solid #e5e7eb",
+              cursor: "pointer",
+              color: "#374151",
+            }}
+          >
+            Fill out info
+          </button>
 
           <select
             value={program.status}
@@ -1332,6 +1006,342 @@ function ProgramCard({
   );
 }
 
+// ================================================================
+// DOCUMENT MASTER CHECKLIST (unchanged behavior)
+// ================================================================
+function DocumentMasterChecklist({ programs }: { programs: Program[] }) {
+  const [checked, setChecked] = useState<Record<string, boolean>>({});
+
+  const docMap: Record<string, Program[]> = {};
+  programs.forEach((p) => {
+    p.documents.forEach((doc) => {
+      if (!docMap[doc]) docMap[doc] = [];
+      if (!docMap[doc].some((pp) => pp.id === p.id)) {
+        docMap[doc].push(p);
+      }
+    });
+  });
+
+  const sharedDocs = Object.entries(docMap).filter(
+    ([, progs]) => progs.length > 1,
+  );
+  const perProgramDocs: { program: Program; docs: string[] }[] = programs.map(
+    (p) => {
+      const docsForProgram = p.documents.filter((doc) => {
+        const progs = docMap[doc] || [];
+        return progs.length === 1;
+      });
+      return { program: p, docs: Array.from(new Set(docsForProgram)) };
+    },
+  );
+
+  const programDocKeys = perProgramDocs.flatMap(({ program, docs }) =>
+    docs.map((doc) => `${program.id}::${doc}`),
+  );
+  const sharedDocKeys = sharedDocs.map(([doc]) => `shared::${doc}`);
+  const allKeys = [...programDocKeys, ...sharedDocKeys];
+
+  const doneCount = allKeys.filter((k) => checked[k]).length;
+  const pct =
+    allKeys.length > 0 ? Math.round((doneCount / allKeys.length) * 100) : 0;
+  const allDone = doneCount === allKeys.length && allKeys.length > 0;
+
+  return (
+    <div
+      style={{
+        background: "white",
+        border: "1px solid #e5e7eb",
+        borderRadius: "13px",
+        overflow: "hidden",
+        marginTop: "20px",
+      }}
+    >
+      <div
+        style={{ padding: "14px 18px 12px", borderBottom: "1px solid #f3f4f6" }}
+      >
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            marginBottom: "10px",
+          }}
+        >
+          <div>
+            <p
+              style={{
+                margin: "0 0 2px",
+                fontSize: "13px",
+                fontWeight: "700",
+                color: "#111827",
+              }}
+            >
+              Documents checklist
+            </p>
+            <p style={{ margin: 0, fontSize: "11px", color: "#6b7280" }}>
+              Everything needed by program — gather once
+            </p>
+          </div>
+          <span
+            style={{
+              background: allDone ? "#d1fae5" : "#f3f4f6",
+              color: allDone ? "#059669" : "#6b7280",
+              fontSize: "11px",
+              fontWeight: "700",
+              padding: "3px 10px",
+              borderRadius: "99px",
+              flexShrink: 0,
+            }}
+          >
+            {doneCount}/{allKeys.length} gathered
+          </span>
+        </div>
+        <div
+          style={{
+            height: "4px",
+            background: "#f3f4f6",
+            borderRadius: "99px",
+            overflow: "hidden",
+          }}
+        >
+          <div
+            style={{
+              height: "100%",
+              borderRadius: "99px",
+              background: allDone ? "#059669" : "#2563eb",
+              width: `${pct}%`,
+              transition: "width 0.3s ease",
+            }}
+          />
+        </div>
+      </div>
+
+      {perProgramDocs.map(({ program, docs }, idx) => {
+        if (docs.length === 0) return null;
+        const t = TYPE_CONFIG[program.type] || TYPE_CONFIG.ongoing;
+
+        return (
+          <div
+            key={program.id}
+            style={{
+              borderBottom:
+                idx < perProgramDocs.length - 1 || sharedDocs.length > 0
+                  ? "1px solid #f9fafb"
+                  : "none",
+              padding: "10px 18px 12px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                marginBottom: "6px",
+              }}
+            >
+              <span
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  color: "#111827",
+                }}
+              >
+                {program.name}
+              </span>
+              <span
+                style={{
+                  background: t.bg,
+                  color: t.color,
+                  border: `1px solid ${t.border}`,
+                  fontSize: "10px",
+                  fontWeight: "700",
+                  padding: "1px 6px",
+                  borderRadius: "99px",
+                }}
+              >
+                {program.shortName}
+              </span>
+            </div>
+
+            {docs.map((doc) => {
+              const key = `${program.id}::${doc}`;
+              const done = !!checked[key];
+              return (
+                <label
+                  key={key}
+                  style={{
+                    display: "flex",
+                    alignItems: "flex-start",
+                    gap: "10px",
+                    padding: "6px 0",
+                    cursor: "pointer",
+                  }}
+                  onClick={() =>
+                    setChecked((prev) => ({ ...prev, [key]: !prev[key] }))
+                  }
+                >
+                  <div
+                    style={{
+                      width: "16px",
+                      height: "16px",
+                      borderRadius: "4px",
+                      flexShrink: 0,
+                      marginTop: "2px",
+                      border: done ? "none" : "1.5px solid #d1d5db",
+                      background: done ? "#059669" : "white",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      transition: "all 0.12s",
+                    }}
+                  >
+                    {done && <CheckCircle size={10} color="white" />}
+                  </div>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontSize: "13px",
+                      color: done ? "#9ca3af" : "#374151",
+                      textDecoration: done ? "line-through" : "none",
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {doc}
+                  </p>
+                </label>
+              );
+            })}
+          </div>
+        );
+      })}
+
+      {sharedDocs.length > 0 && (
+        <div
+          style={{
+            padding: "10px 18px 12px",
+            borderTop: "1px solid #f3f4f6",
+          }}
+        >
+          <p
+            style={{
+              margin: "0 0 6px",
+              fontSize: "11px",
+              fontWeight: 700,
+              color: "#6b7280",
+              textTransform: "uppercase",
+              letterSpacing: "0.08em",
+            }}
+          >
+            Shared documents
+          </p>
+          {sharedDocs.map(([doc, progs]) => {
+            const key = `shared::${doc}`;
+            const done = !!checked[key];
+            return (
+              <label
+                key={key}
+                style={{
+                  display: "flex",
+                  alignItems: "flex-start",
+                  gap: "10px",
+                  padding: "6px 0",
+                  cursor: "pointer",
+                }}
+                onClick={() =>
+                  setChecked((prev) => ({ ...prev, [key]: !prev[key] }))
+                }
+              >
+                <div
+                  style={{
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "4px",
+                    flexShrink: 0,
+                    marginTop: "2px",
+                    border: done ? "none" : "1.5px solid #d1d5db",
+                    background: done ? "#059669" : "white",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "all 0.12s",
+                  }}
+                >
+                  {done && <CheckCircle size={10} color="white" />}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p
+                    style={{
+                      margin: "0 0 3px",
+                      fontSize: "13px",
+                      color: done ? "#9ca3af" : "#374151",
+                      textDecoration: done ? "line-through" : "none",
+                      lineHeight: 1.4,
+                    }}
+                  >
+                    {doc}
+                  </p>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "4px",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    {progs.map((p) => {
+                      const tt =
+                        TYPE_CONFIG[p.type] || TYPE_CONFIG.ongoing;
+                      return (
+                        <span
+                          key={p.id}
+                          style={{
+                            background: tt.bg,
+                            color: tt.color,
+                            border: `1px solid ${tt.border}`,
+                            fontSize: "10px",
+                            fontWeight: "700",
+                            padding: "1px 6px",
+                            borderRadius: "99px",
+                          }}
+                        >
+                          {p.shortName}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              </label>
+            );
+          })}
+        </div>
+      )}
+
+      {allDone && (
+        <div
+          style={{
+            padding: "11px 18px",
+            background: "#f0fdf4",
+            borderTop: "1px solid #a7f3d0",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <CheckCircle size={13} color="#059669" />
+          <p
+            style={{
+              margin: 0,
+              fontSize: "12px",
+              color: "#059669",
+              fontWeight: "600",
+            }}
+          >
+            All documents gathered — you're ready to apply!
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ================================================================
 // AGENCY CARD
@@ -1405,8 +1415,7 @@ function AgencyCard({ agency }: { agency: DashboardData["agency"] }) {
                 color: "#374151",
               }}
             >
-              <Phone size={11} color="#d97706" />{" "}
-              <strong>{agency.phone}</strong>
+              <Phone size={11} color="#d97706" /> <strong>{agency.phone}</strong>
             </div>
             <div
               style={{
@@ -1478,24 +1487,39 @@ function AgencyCard({ agency }: { agency: DashboardData["agency"] }) {
 }
 
 // ================================================================
-// MAIN DASHBOARD (wider, denser, 60/40 + full-width checklist)
+// MAIN DASHBOARD
 // ================================================================
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData>(DUMMY);
   const [programs, setPrograms] = useState<Program[]>(DUMMY.programs);
   const [dismissed, setDismissed] = useState<string[]>([]);
-  const [showSavings, setShowSavings] = useState(false); // kept if referenced elsewhere
+  const [showSavings, setShowSavings] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     const stored = sessionStorage.getItem("eligibilityResult");
     if (stored) {
       try {
-        const parsed = JSON.parse(stored);
+        const parsed = JSON.parse(stored) as DashboardData;
         setData(parsed);
-        setPrograms(parsed.programs);
+
+        let progs: Program[] = parsed.programs;
+
+        const statusRaw = sessionStorage.getItem("programStatuses");
+        if (statusRaw) {
+          try {
+            const statusMap = JSON.parse(statusRaw) as Record<string, Status>;
+            progs = progs.map((p) =>
+              statusMap[p.id] ? { ...p, status: statusMap[p.id] } : p,
+            );
+          } catch {
+            // ignore
+          }
+        }
+
+        setPrograms(progs);
       } catch {
-        // fall back to dummy data
+        // fallback uses DUMMY
       }
     }
     setLoaded(true);
@@ -1505,11 +1529,19 @@ export default function Dashboard() {
   const visibleAlerts = data.alerts.filter((a) => !dismissed.includes(a.id));
   const submittedCount = programs.filter((p) => p.status === "submitted")
     .length;
+  const cashPrograms = programs.filter((p) => p.annualSaving !== null);
 
   function handleStatus(id: string, status: Status) {
     setPrograms((prev) =>
       prev.map((p) => (p.id === id ? { ...p, status } : p)),
     );
+
+    const statusRaw = sessionStorage.getItem("programStatuses");
+    const statusMap: Record<string, Status> = statusRaw
+      ? JSON.parse(statusRaw)
+      : {};
+    statusMap[id] = status;
+    sessionStorage.setItem("programStatuses", JSON.stringify(statusMap));
   }
 
   if (!loaded)
@@ -1528,8 +1560,6 @@ export default function Dashboard() {
         </p>
       </div>
     );
-
-  const cashPrograms = programs.filter((p) => p.annualSaving !== null);
 
   return (
     <div
@@ -1632,7 +1662,6 @@ export default function Dashboard() {
           padding: "20px 24px 40px",
         }}
       >
-        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
@@ -1738,7 +1767,7 @@ export default function Dashboard() {
             marginTop: "4px",
           }}
         >
-          {/* LEFT: programs + agency (60%) */}
+          {/* LEFT: programs + agency */}
           <div style={{ flex: 3, minWidth: 0 }}>
             <p
               style={{
@@ -1781,7 +1810,7 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* RIGHT: savings, breakdown (40%) */}
+          {/* RIGHT: savings + visualization */}
           <div
             className="results-right"
             style={{
@@ -2003,6 +2032,17 @@ export default function Dashboard() {
           <DocumentMasterChecklist programs={programs} />
         </div>
       </div>
+
+      {/* OPTIONAL: savings modal trigger if you reuse showSavings flag */}
+      <AnimatePresence>
+        {showSavings && (
+          <SavingsModal
+            programs={programs}
+            billImpact={data.billImpact}
+            onClose={() => setShowSavings(false)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
