@@ -437,7 +437,6 @@ export default function EligibilityPage() {
   const progressPct = ((qIndex + 1) / QUESTIONS.length) * 100;
 
   // ── Account submit ──
-  // ── Account submit ──
   function handleAccountSubmit() {
     if (!account.firstName.trim())
       return toast("Please enter your first name.", "error");
@@ -445,20 +444,14 @@ export default function EligibilityPage() {
       return toast("Please enter your last name.", "error");
     if (!account.email.includes("@"))
       return toast("Please enter a valid email address.", "error");
-
-    const normalizedPostal = account.postalCode.toUpperCase();
-    const POSTAL_REGEX = /^[A-Z]\d[A-Z]\s\d[A-Z]\d$/;
-    if (!POSTAL_REGEX.test(normalizedPostal))
-      return toast("Enter a valid Canadian postal code (e.g. M5V 2T6).", "error");
-
+    if (!/^[A-Za-z]\d[A-Za-z]/.test(account.postalCode.replace(/\s/, "")))
+      return toast("Enter a valid Canadian postal code.", "error");
     if (account.password.length < 6)
       return toast("Password must be at least 6 characters.", "error");
-
-    setAnswers((prev) => ({ ...prev, postalCode: normalizedPostal }));
+    setAnswers((prev) => ({ ...prev, postalCode: account.postalCode }));
     toast("Account info saved — let's check your eligibility!", "success");
     setTimeout(() => setPhase("eligibility"), 350);
   }
-
 
   // ── Eligibility advance ──
   function handleNext() {
@@ -476,7 +469,7 @@ export default function EligibilityPage() {
     setSubmitting(true);
     toast("Checking your eligibility…", "info");
     const payload = {
-      postalCode: account.postalCode,
+      postalCode: answers.postalCode || account.postalCode,
       householdSize: parseInt(answers.householdSize) || 1,
       annualIncome: parseInt(answers.annualIncome) || 0,
       hasArrears: answers.hasArrears === "yes",
@@ -673,31 +666,14 @@ export default function EligibilityPage() {
                     style={inputStyle}
                     placeholder="M5V 2T6"
                     value={account.postalCode}
-                    onChange={(e) => {
-                      // Uppercase and strip anything not A–Z or 0–9
-                      let value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
-
-                      // Insert space after third character if more than 3 chars
-                      if (value.length > 3) {
-                        value = value.slice(0, 3) + " " + value.slice(3, 6);
-                      }
-
-                      // Enforce max length "X#X #X#" (7 including space)
-                      if (value.length > 7) {
-                        value = value.slice(0, 7);
-                      }
-
+                    onChange={(e) =>
                       setAccount((a) => ({
                         ...a,
-                        postalCode: value,
-                      }));
-                    }}
-                    maxLength={7}
-                    autoComplete="postal-code"
-                    inputMode="text"
+                        postalCode: e.target.value.toUpperCase(),
+                      }))
+                    }
                   />
                 </div>
-
 
                 {/* Password */}
                 <div
@@ -837,8 +813,8 @@ export default function EligibilityPage() {
                   </p>
                 )}
 
-                {/* umber input */}
-                {(currentQ.type === "number") && (
+                {/* Text/number input */}
+                {(currentQ.type === "text" || currentQ.type === "number") && (
                   <input
                     key={currentQ.key}
                     type={currentQ.type}
